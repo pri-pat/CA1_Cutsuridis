@@ -18,16 +18,20 @@ When using Python to run the code, up to five command line arguments can be spec
 * **scaleEScon:** 1 or 0; 1=scale connections down as well, to speed up simulation time for testing and debugging purposes
 
 To run a model with the name "2ndrun" that only creates output files and no plots, enter:
+
 ```
 python -i HAM_StoRec_ser_trblsht.py "2ndrun" 1 0
 ```
 
 To run a model that creates output files and plots, enter:
+
 ```
 python -i HAM_StoRec_ser_trblsht.py "2ndrun" 1 1
 ```
 
 To run a model that brings up the NEURON RunControl GUI and lets you click the Init & Run button, enter:
+
+```
 python -i HAM_StoRec_ser_trblsht.py "2ndrun" 0 0
 ```
 
@@ -35,6 +39,7 @@ python -i HAM_StoRec_ser_trblsht.py "2ndrun" 0 0
 ###### NEURON
 
 To use stand-alone NEURON to run the code, in a terminal enter:
+
 ```
 nrngui HAM_StoRec_ser.hoc
 ```
