@@ -79,7 +79,8 @@ proc mknet() {
 connect_random_low_start_ = 1  // low seed for mcell_ran4_init()
 mcell_ran4_init(connect_random_low_start_)
 nclist = new List()
-  
+
+/*  
   //print "   EC..."
   // EC to BC
   connectcells(nbcell, iBC, nEC, iEC, EC_BC, EI_EC, EI_EC+1, EIDEL, EIWGT)
@@ -139,7 +140,7 @@ nclist = new List()
   connectcells(npcell, iPC, nolm, iOLM, OLM_PC, I_OLM+2, I_OLM+3, OLMcell2Pcell_delay, OLMcell2Pcell_GABAB_weight)
   // OLM to BC
   //connectcells(nbcell, iBC, nolm, iOLM, OLM_BC, II_OPP, II_OPP, OLMcell2Bcell_delay, OLMcell2Bcell_weight)
-
+*/
   //print "Connect inputs..."
   // EC input to PCs
   connectEC(FPATT, ECPATT, NPATT, E_EC, 2)	// restore existing pattern
