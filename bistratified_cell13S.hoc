@@ -233,7 +233,6 @@ proc biophys() {
 		insert mykca
 		gkbar = 0.0002			// Ca2+ and Voltage-dependent K+ (BK) conductance
 
-//		Ra = 10.3			// 31.3 +/- 10.9
 		Ra = 100			// 31.3 +/- 10.9
 		enat = 55
 		ekf = -90
