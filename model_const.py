@@ -56,7 +56,7 @@ h('ECCA3DEL = 9')    # msecs
 h('SIMDUR = 0')    # msecs
 
 # h.SIMDUR = h.STARTDEL + (h.THETA*2) # Scaled down for testing code for technical bugs only
-h.SIMDUR = h.STARTDEL + (h.THETA*h.numCycles)    # simulation duration (msecs)
+h.SIMDUR = 100 #h.STARTDEL + (h.THETA*h.numCycles)    # simulation duration (msecs)
 
 
 # Septal inhibition

@@ -2,19 +2,36 @@
 % and determine quality of recall
 % Summary diagram for Hippocampus paper
 % BPG 23-1-09
+scaledDown
 
-NCELL = 235;  % number of cells (neurons)
-NPCELL = 100; % number of PC (output) cells
 
-NPATT = 1;   % number of patterns
-SPATT = 20;   % number of active cells per pattern
-CPATT = 1;  % index of cue pattern
+if scaledDown==.2
+    NCELL = 155;  % number of cells (neurons)
+    NPCELL = 20; % number of PC (output) cells
 
-RTIME = 50+(250*8);    % run time (msecs)
-STIME = 200;
-ETIME = 2050;
+    NPATT = 1;   % number of patterns
+    SPATT = 20;   % number of active cells per pattern
+    CPATT = 1;  % index of cue pattern
 
-FPATT = '../Weights/pattsN100S20P5.dat';   % patterns file
+    RTIME = 50+(250*8);    % run time (msecs)
+    STIME = 200;
+    ETIME = 2050;
+
+    FPATT = '../Weights/pattsN100S20P5Scaled.dat';   % patterns file
+
+else
+    NCELL = 235;  % number of cells (neurons)
+    NPCELL = 100; % number of PC (output) cells
+
+    NPATT = 1;   % number of patterns
+    SPATT = 20;   % number of active cells per pattern
+    CPATT = 1;  % index of cue pattern
+
+    RTIME = 50+(250*8);    % run time (msecs)
+    STIME = 200;
+    ETIME = 2050;
+
+    FPATT = '../Weights/pattsN100S20P5.dat';   % patterns file
 
 FSTEM = 'HAM_P5R1_spt';   % spikes file
 FSPIKE = [FSTEM '.dat'];   % spikes file

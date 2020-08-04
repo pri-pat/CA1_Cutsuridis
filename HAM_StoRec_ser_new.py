@@ -42,7 +42,7 @@ if len(sys.argv)>1:
 h('{load_file("ranstream.hoc")}')  # to give each cell its own sequence generator
 
 h('strdef fstem')
-h.fstem = "Results/" + h.simname
+h.fstem = "pyresults/" + h.simname
 print("simname = ", h.simname, ", fstem = ", h.fstem)
 
 
@@ -329,7 +329,7 @@ netfcns.mkEC(cells, ranlist, iEC, dictpop["ECCell"].num)
 netfcns.spikerecord(cells)
 results = netfcns.vrecord(cells,dictpop)
 
-fstem = "Results/HAM_P5R1"
+fstem = "pyresults/HAM_P5R1"
 
 h.tstop = 100 #h.SIMDUR
 h.celsius = 34

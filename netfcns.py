@@ -271,8 +271,6 @@ def spikerecord(cells):
 # Vectors that record voltages from INs
 
 def vrecord(cells,dictpop):
-    
-    
     iPC = dictpop['PyramidalCell'].gidst
     iBC = dictpop['BasketCell'].gidst
     iAAC = dictpop['AACell'].gidst
@@ -298,15 +296,19 @@ def vrecord(cells,dictpop):
 
         if (gid==iBC):
             results["vBC"] = h.Vector().record(cell.soma(0.5)._ref_v)
+            print("Recording results into vBC from ", cell)
 
         if (gid==iAAC):
             results["vAAC"] = h.Vector().record(cell.soma(0.5)._ref_v)
+            print("Recording results into vAAC from ", cell)
 
         if (gid==iBSC):
             results["vBSC"] = h.Vector().record(cell.soma(0.5)._ref_v)
+            print("Recording results into vBSC from ", cell)
 
         if (gid==iOLM):
             results["vOLM"] = h.Vector().record(cell.soma(0.5)._ref_v)
+            print("Recording results into vOLM from ", cell)
 
     return results
 
@@ -316,67 +318,54 @@ def spikeout(cells,fstem):
         for i, cell in enumerate(cells):
             if (cell.is_art==0):
                 for spk in cell.spike_times:
-                    f.write("{}\t{}\n".format(spk, i))
+                    f.write("{}\t{}\n".format(spk, cell.gid))
 
 def vout(cells,results,fstem,dictpop):
     
-    iPC = dictpop['PyramidalCell'].gidst
-    iBC = dictpop['BasketCell'].gidst
-    iAAC = dictpop['AACell'].gidst
-    iBSC = dictpop['BistratifiedCell'].gidst
-    iOLM = dictpop['OLMCell'].gidst
-    iCA3 = dictpop['CA3Cell'].gidst
-    iEC = dictpop['ECCell'].gidst
-    iSEP = dictpop['SEPCell'].gidst  
 
+    with open("{}_pvsoma.dat".format(fstem), 'w') as f:
+        for v in results["pvsoma"]:
+            f.write("{}\n".format(v))
 
-    for cell in cells:	# loop over possible target cells
-        gid = cell.gid	# id of cell
-        if (gid==iPPC):
-            with open("{}_pvsoma.dat".format(fstem), 'w') as f:
-                for v in results["pvsoma"]:
-                    f.write("{}\n".format(v))
+    with open("{}_pvsr.dat".format(fstem), 'w') as f:
+        for v in results["pvsr"]:
+            f.write("{}\n".format(v))
 
-            with open("{}_pvsr.dat".format(fstem), 'w') as f:
-                for v in results["pvsr"]:
-                    f.write("{}\n".format(v))
+    with open("{}_pvslm.dat".format(fstem), 'w') as f:
+        for v in results["pvslm"]:
+            f.write("{}\n".format(v))
 
-            with open("{}_pvslm.dat".format(fstem), 'w') as f:
-                for v in results["pvslm"]:
-                    f.write("{}\n".format(v))
+    with open("{}_npvsoma.dat".format(fstem), 'w') as f:
+        for v in results["npvsoma"]:
+            f.write("{}\n".format(v))
 
-        if (gid==iNPPC):
-            with open("{}_npvsoma.dat".format(fstem), 'w') as f:
-                for v in results["npvsoma"]:
-                    f.write("{}\n".format(v))
+    with open("{}_npvsr.dat".format(fstem), 'w') as f:
+        for v in results["npvsr"]:
+            f.write("{}\n".format(v))
 
-            with open("{}_npvsr.dat".format(fstem), 'w') as f:
-                for v in results["npvsr"]:
-                    f.write("{}\n".format(v))
+    with open("{}_npvslm.dat".format(fstem), 'w') as f:
+        for v in results["npvslm"]:
+            f.write("{}\n".format(v))
 
-            with open("{}_npvslm.dat".format(fstem), 'w') as f:
-                for v in results["npvslm"]:
-                    f.write("{}\n".format(v))
+    with open("{}_BC.dat".format(fstem), 'w') as f:
+        for v in results["vBC"]:
+            f.write("{}\n".format(v))
 
-        if (gid==iBC):
-            with open("{}_BC.dat".format(fstem), 'w') as f:
-                for v in results["vBC"]:
-                    f.write("{}\n".format(v))
+    with open("{}_AAC.dat".format(fstem), 'w') as f:
+        for v in results["vAAC"]:
+            f.write("{}\n".format(v))
+        plt.figure()
+        plt.plot(results["vAAC"])
+        plt.xlabel("AAC")
+        plt.show()
 
-        if (gid==iAAC):
-            with open("{}_AAC.dat".format(fstem), 'w') as f:
-                for v in results["vAAC"]:
-                    f.write("{}\n".format(v))
+    with open("{}_BSC.dat".format(fstem), 'w') as f:
+        for v in results["vBSC"]:
+            f.write("{}\n".format(v))
 
-        if (gid==iBSC):
-            with open("{}_BSC.dat".format(fstem), 'w') as f:
-                for v in results["vBSC"]:
-                    f.write("{}\n".format(v))
-
-        if (gid==iOLM):
-            with open("{}_OLM.dat".format(fstem), 'w') as f:
-                for v in results["vOLM"]:
-                    f.write("{}\n".format(v))
+    with open("{}_OLM.dat".format(fstem), 'w') as f:
+        for v in results["vOLM"]:
+            f.write("{}\n".format(v))
 
 
 # produce raster plot of spiking activity
