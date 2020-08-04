@@ -14,13 +14,15 @@ import numpy as np
 import random
 import math
 import sys
+import netfcns
 
 h("strdef simname")
-h("batchflag = 0")
-h("plotflag = 0")
+h("batchflag = 1")
+h("plotflag = 1")
 h("scaleDown = 1")
 h("scaleEScon = 1")
 h("numCycles = 8")
+scaleDown = 1
 
 h.simname="test"
 if len(sys.argv)>1:
@@ -31,14 +33,13 @@ if len(sys.argv)>1:
             h.plotflag = int(sys.argv[3])
             if len(sys.argv)>4:
                 h.scaleDown = float(sys.argv[4])
+                scaleDown = float(sys.argv[4])
                 if len(sys.argv)>5:
                     h.scaleEScon = float(sys.argv[5])
                     if len(sys.argv)>6:
                         h.numCycles = float(sys.argv[6])
 
-print("h.simname = ", h.simname)
-
-h('load_file("ranstream.hoc")')  # to give each cell its own sequence generator
+h('{load_file("ranstream.hoc")}')  # to give each cell its own sequence generator
 
 h('strdef fstem')
 h.fstem = "Results/" + h.simname
@@ -47,14 +48,9 @@ print("simname = ", h.simname, ", fstem = ", h.fstem)
 
 # Set Timing Parameters
 
-h('STARTDEL = 50')    # msecs
-h('THETA = 250')    # msecs (4 Hz)
-h('GAMMA = 25')    # msecs (40 Hz)
-h('ECCA3DEL = 9')    # msecs
-h('SIMDUR = 0')    # msecs
+from model_const import *
+SPATT = calcSPATT(scaleDown)
 
-# h.SIMDUR = h.STARTDEL + (h.THETA*2) # Scaled down for testing code for technical bugs only
-h.SIMDUR = h.STARTDEL + (h.THETA*h.numCycles)    # simulation duration (msecs)
 
 # Set GID ranges of cells and Load Cell Class definitions
 class CellPop:
@@ -83,14 +79,28 @@ dictpop={}
 for pop in poplist:
     dictpop[pop.popname] = pop
 
+
 st=0
 for pop in poplist:
-    h('load_file("' + pop.filename + '")')
+    #h('{load_file("' + pop.filename + '")}')
     pop.gidst=st
     pop.gidend=pop.gidst + pop.num - 1
     st = pop.gidend + 1
 
+
+from pyramidal_cell_14Vb import PyramidalCell
+from basket_cell17S import BasketCell
+from axoaxonic_cell17S import AACell
+from bistratified_cell13S import BistratifiedCell
+from olm_cell2 import OLMCell
+from stim_cell import StimCell
 from burst_cell import BurstCell
+
+
+
+
+from burst_cell import BurstCell
+from stim_cell import StimCell
 
 
 # Calculate totals of cells
@@ -119,12 +129,21 @@ dictpop = dict(zip([o.popname for o in poplist], poplist))
 cells = []
 ranlist = []
 gidvec = []
+nclist = []
 
 i=0
 for pop in poplist:
     for j in range(int(pop.num)):    
-        exec("cells.append(h." + pop.classtype + ")")
-        print("cells.append(h." + pop.classtype + ")")
+        # if pop.filename=="burst_cell.hoc":
+        #     cells.append(BurstCell())
+        # elif pop.filename=="stim_cell.hoc": 
+        #     cells.append(StimCell())
+        # else:
+        newcell = None
+        exec("newcell = "+pop.classtype+ "(int("+str(i)+"))")
+        cells.append(newcell)
+            #exec("cells.append(h." + pop.classtype + ")")
+            #print("cells.append(h." + pop.classtype + ")")
         ranlist.append(h.RandomStream(i))  # ranlist.o(i) corresponds to
         gidvec.append(i)
         i+=1
@@ -132,63 +151,16 @@ for pop in poplist:
 # Configures the stimulation:
 
 
-# Septal inhibition
-SEPNUM = 1000    # number of SEP spikes
-SEPSTART = h.STARTDEL+(h.THETA/12)    # time of first SEP spike
-SEPINT = 20    # SEP spike ISI (during burst)
-SEPNOISE = 0.4    # SEP ISI noise
-SEPBINT = 2*h.THETA/3    # SEP interburst interval
-SEPBLEN = h.THETA/3    # SEP burst length
-
-
-# Background excitation (not used)
-ENUM = 0    # number of spikes
-ESTART = 0    # time of first spike
-EINT = 200    # spike ISI
-ENOISE = 1    # ISI noise
-EWGT = 0.001    # excitatory weights (AMPA)
-ENWGT = 0.002    # excitatory weights (NMDA)
-EDEL = 1    # delay (msecs)
-
-# EC excitation
-ECPATT = 1    # index of output pattern
-ECNUM = 1000    # number of EC spikes
-ECSTART = h.STARTDEL    # time of first EC spike
-ECINT = h.GAMMA    # EC spike ISI
-ECNOISE = 0.2    # EC ISI noise
-ECWGT = 0.0    # EC weight to PCs
-#ECWGT = 0.001    # EC weight to PCs
-ECDEL = 1    # EC delay
-EIWGT = 0.00015    # excitatory weights to INs
-EIDEL = 1    # delay (msecs)
-
-# Cue (CA3) excitation
-CNUM = 1000    # number of cue spikes
-CSTART = h.STARTDEL+h.ECCA3DEL    # time of first cue spike
-CINT = h.GAMMA    # cue spike ISI
-CNOISE = 0.2    # cue ISI noise
-CHWGT = 0.0015    # cue weight
-CLWGT = 0.0005    # unlearnt weight (usually 0)
-CNWGT = 0.0005    # excitatory weights (NMDA)
-CDEL = 1    # cue delay
-
-# STDP configuration
-STDPDFAC = 0    # depression factor
-STDPPFAC = 0    # potentiation factor
-#STDPDFAC = 0.2    # depression factor
-#STDPPFAC = 1.0    # potentiation factor
-AMPASUPP = 0.4    # fraction of AMPA during storage
-STDPTHRESH = -55    # voltage threshold for STDP
-STDPSTART = h.STARTDEL+(h.THETA/2)    # STDP starts at same time as EC input
-STDPINT = h.THETA/2    # STDP interburst (recall) interval
-STDPLEN = h.THETA/2    # STDP burst (storage) length
-
-
 i=0
 for pop in poplist:
     for j in range(int(pop.num)):    
-        exec("cells.append(h." + pop.classtype + ")")
+        exec("cells.append(" + pop.classtype + "())")
         ranlist.append(h.RandomStream(i))  # ranlist.o(i) corresponds to
+#        CellObj.stim.noiseFromRandom(ranlist[-1].r)
+#        ranlist[-1].r.negexp(1)
+#        ranlist[-1].start()      
+        
+        
         gidvec.append(i)
         i+=1
 
@@ -204,6 +176,7 @@ for i in range(int(dictpop["ECCell"].gidst),int(dictpop["ECCell"].gidend+1)):
     cells[i].stim.interval = EINT
     cells[i].stim.noise = ENOISE
 
+
 for i in range(int(dictpop["SEPCell"].gidst),int(dictpop["SEPCell"].gidend+1)):
     cells[i].stim.number = SEPNUM
     cells[i].stim.start = SEPSTART
@@ -214,10 +187,7 @@ for i in range(int(dictpop["SEPCell"].gidst),int(dictpop["SEPCell"].gidend+1)):
     
     # Use the gid-specific random generator so random streams are
     # independent of where and how many stims there are.
-    h('rs = ranlist[i]')
-    h('stim.noiseFromRandom(rs.r)')
-    h('rs.r.negexp(1)')
-    h('rs.start()')
+
 
 
 # Pattern storage and recall parameters
@@ -233,6 +203,8 @@ CPATT = 1    # index of cue pattern
 CFRAC = 1    # fraction of active cells in cue
 iPPC=1        # index of a pattern PC (1st patt in 5 patterns)
 iNPPC=0        # index of a non-pattern PC (1st patt in 5 patterns)
+
+
 
 # file name of connection weights and patterns
 # (cue and EC patterns taken from FSTORE file to implement storage)
@@ -258,6 +230,9 @@ class popConn:
         self.delay=delay
         self.synst=synst
         self.synend=synend
+        
+    def __repr__(self):
+        return "Connection {} {} ---> {} of type {} with weight {}".format(int(self.prenum), self.prepop, self.popname, self.type, self.weight)
 
 # Synapse indices
 # onto CA1 PCs
@@ -284,25 +259,25 @@ EO_PC = 0    # CA1 PC AMPA excit (2 of)
 IO_IN = 2    # inhib from INs and septum (2 of: 1 GABAA, 1 GABAB)
 
 connlist=[]                    # Postsynaptic type      Presynaptic type  number of connections (at least 1)
-connlist.append(popConn(popname="PyramidalCell", prepop="CA3Cell", prenum=max([nCA3 * scaleEScon, 1]), type="AMPA", weight=CLWGT, delay=CDEL, synst=E_CA3, synend=E_CA3+EN_CA3)) # CA3_PC. Use EM_CA3 for modifiable synapses
-connlist.append(popConn(popname="BasketCell",    prepop="CA3Cell", prenum=max([nCA3 * scaleEScon, 1]), type="AMPA", weight=EIWGT, delay=EIDEL, synst=EI_CA3, synend=EI_CA3+3)) # 
-connlist.append(popConn(popname="AACell",        prepop="CA3Cell", prenum=max([nCA3 * scaleEScon, 1]), type="AMPA", weight=EIWGT, delay=EIDEL, synst=EI_CA3, synend=EI_CA3+3)) # CA3_AAC
-connlist.append(popConn(popname="BistratifiedCell", prepop="CA3Cell", prenum=max([nCA3 * scaleEScon, 1]), type="AMPA", weight=EIWGT, delay=EIDEL, synst=EI_CA3, synend=EI_CA3+3)) # CA3_BSC
+connlist.append(popConn(popname="PyramidalCell", prepop="CA3Cell", prenum=max([dictpop["CA3Cell"].num * h.scaleEScon, 1]), type="AMPA", weight=CLWGT, delay=CDEL, synst=E_CA3, synend=E_CA3+EN_CA3)) # CA3_PC. Use EM_CA3 for modifiable synapses
+connlist.append(popConn(popname="BasketCell",    prepop="CA3Cell", prenum=max([dictpop["CA3Cell"].num * h.scaleEScon, 1]), type="AMPA", weight=EIWGT, delay=EIDEL, synst=EI_CA3, synend=EI_CA3+3)) # 
+connlist.append(popConn(popname="AACell",        prepop="CA3Cell", prenum=max([dictpop["CA3Cell"].num * h.scaleEScon, 1]), type="AMPA", weight=EIWGT, delay=EIDEL, synst=EI_CA3, synend=EI_CA3+3)) # CA3_AAC
+connlist.append(popConn(popname="BistratifiedCell", prepop="CA3Cell", prenum=max([dictpop["CA3Cell"].num * h.scaleEScon, 1]), type="AMPA", weight=EIWGT, delay=EIDEL, synst=EI_CA3, synend=EI_CA3+3)) # CA3_BSC
 
-connlist.append(popConn(popname="PyramidalCell", prepop="ECCell", prenum=max([nEC * scaleEScon, 1]), type="AMPA", weight=ECWGT, delay=EIDEL, synst=E_EC, synend=E_EC+2)) # EC_PC
-connlist.append(popConn(popname="BasketCell",    prepop="ECCell", prenum=max([nEC * scaleEScon, 1]), type="AMPA", weight=EIWGT, delay=EIDEL, synst=EI_EC, synend=EI_EC+1)) # EC_BC
-connlist.append(popConn(popname="AACell",        prepop="ECCell", prenum=max([nEC * scaleEScon, 1]), type="AMPA", weight=EIWGT, delay=EIDEL, synst=EI_EC, synend=EI_EC+1)) # EC_AAC
+connlist.append(popConn(popname="PyramidalCell", prepop="ECCell", prenum=max([dictpop["ECCell"].num * h.scaleEScon, 1]), type="AMPA", weight=ECWGT, delay=EIDEL, synst=E_EC, synend=E_EC+2)) # EC_PC
+connlist.append(popConn(popname="BasketCell",    prepop="ECCell", prenum=max([dictpop["ECCell"].num * h.scaleEScon, 1]), type="AMPA", weight=EIWGT, delay=EIDEL, synst=EI_EC, synend=EI_EC+1)) # EC_BC
+connlist.append(popConn(popname="AACell",        prepop="ECCell", prenum=max([dictpop["ECCell"].num * h.scaleEScon, 1]), type="AMPA", weight=EIWGT, delay=EIDEL, synst=EI_EC, synend=EI_EC+1)) # EC_AAC
 
-connlist.append(popConn(popname="BasketCell",    prepop="SEPCell", prenum=nSEP, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=II_SEP, synend=II_SEP+1)) # SEP_BC
-connlist.append(popConn(popname="AACell",        prepop="SEPCell", prenum=nSEP, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=II_SEP, synend=II_SEP+1)) # SEP_AAC
-connlist.append(popConn(popname="BistratifiedCell", prepop="SEPCell", prenum=nSEP, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=II_SEP, synend=II_SEP+1)) # SEP_BSC
-connlist.append(popConn(popname="OLMCell",       prepop="SEPCell", prenum=nSEP, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=IO_IN, synend=IO_IN)) # SEP_OLM
+connlist.append(popConn(popname="BasketCell",    prepop="SEPCell", prenum=dictpop["SEPCell"].num, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=II_SEP, synend=II_SEP+1)) # SEP_BC
+connlist.append(popConn(popname="AACell",        prepop="SEPCell", prenum=dictpop["SEPCell"].num, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=II_SEP, synend=II_SEP+1)) # SEP_AAC
+connlist.append(popConn(popname="BistratifiedCell", prepop="SEPCell", prenum=dictpop["SEPCell"].num, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=II_SEP, synend=II_SEP+1)) # SEP_BSC
+connlist.append(popConn(popname="OLMCell",       prepop="SEPCell", prenum=dictpop["SEPCell"].num, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=IO_IN, synend=IO_IN)) # SEP_OLM
 
-connlist.append(popConn(popname="PyramidalCell", prepop="PyramidalCell", prenum=max([1 * scaleEScon, 1]), type="AMPA", weight=Pcell2Pcell_weight, delay=Pcell2Pcell_delay, synst=E_PC, synend=E_PC)) # PC_PC
-connlist.append(popConn(popname="BasketCell",    prepop="PyramidalCell", prenum=max([dictpop['PyramidalCell'].num * scaleEScon, 1]), type="AMPA", weight = Pcell2Bcell_weight, delay = Pcell2Bcell_delay, synst=EI_PC, synend=EI_PC+1)) # PC_BC
-connlist.append(popConn(popname="BistratifiedCell", prepop="PyramidalCell", prenum=max([dictpop['PyramidalCell'].num * scaleEScon, 1]), type="AMPA", weight = Pcell2AAcell_weight, delay = Pcell2AAcell_delay, synst=EI_PC, synend=EI_PC+1)) # PC_BSC
-connlist.append(popConn(popname="AACell",        prepop="PyramidalCell", prenum=max([dictpop['PyramidalCell'].num * scaleEScon, 1]), type="AMPA", weight = Pcell2BScell_weight, delay = Pcell2BScell_delay, synst=EI_PC, synend=EI_PC+1)) # PC_AAC
-connlist.append(popConn(popname="OLMCell",       prepop="PyramidalCell", prenum=max([dictpop['PyramidalCell'].num * scaleEScon, 1]), type="AMPA", weight = Pcell2OLMcell_weight, delay = Pcell2OLMcell_delay, synst=EI_PC, synend=EI_PC+1)) # PC_OLM
+connlist.append(popConn(popname="PyramidalCell", prepop="PyramidalCell", prenum=max([1 * h.scaleEScon, 1]), type="AMPA", weight=Pcell2Pcell_weight, delay=Pcell2Pcell_delay, synst=E_PC, synend=E_PC)) # PC_PC
+connlist.append(popConn(popname="BasketCell",    prepop="PyramidalCell", prenum=max([dictpop['PyramidalCell'].num * h.scaleEScon, 1]), type="AMPA", weight = Pcell2Bcell_weight, delay = Pcell2Bcell_delay, synst=EI_PC, synend=EI_PC+1)) # PC_BC
+connlist.append(popConn(popname="BistratifiedCell", prepop="PyramidalCell", prenum=max([dictpop['PyramidalCell'].num * h.scaleEScon, 1]), type="AMPA", weight = Pcell2AAcell_weight, delay = Pcell2AAcell_delay, synst=EI_PC, synend=EI_PC+1)) # PC_BSC
+connlist.append(popConn(popname="AACell",        prepop="PyramidalCell", prenum=max([dictpop['PyramidalCell'].num * h.scaleEScon, 1]), type="AMPA", weight = Pcell2BScell_weight, delay = Pcell2BScell_delay, synst=EI_PC, synend=EI_PC+1)) # PC_AAC
+connlist.append(popConn(popname="OLMCell",       prepop="PyramidalCell", prenum=max([dictpop['PyramidalCell'].num * h.scaleEScon, 1]), type="AMPA", weight = Pcell2OLMcell_weight, delay = Pcell2OLMcell_delay, synst=EO_PC, synend=EO_PC+1)) # PC_OLM
 
 connlist.append(popConn(popname="PyramidalCell", prepop="BasketCell", prenum=2, type="GABAA", weight = Bcell2Pcell_weight, delay = Bcell2Pcell_delay, synst=I_BC, synend=I_BC)) # BC_PC
 connlist.append(popConn(popname="BasketCell",    prepop="BasketCell", prenum=1, type="GABAA", weight = Bcell2Bcell_weight, delay = Bcell2Bcell_delay, synst=II_SAME, synend=II_SAME)) # BC_BC
@@ -315,7 +290,7 @@ connlist.append(popConn(popname="PyramidalCell", prepop="AACell", prenum=1, type
 connlist.append(popConn(popname="PyramidalCell", prepop="BistratifiedCell", prenum=1, type="GABAA", weight = BScell2Pcell_weight, delay = BScell2Pcell_delay, synst=I_BSC, synend=I_BSC+5)) # BSC_PC
 connlist.append(popConn(popname="PyramidalCell", prepop="BistratifiedCell", prenum=1, type="GABAB", weight = BScell2Pcell_GABAB_weight, delay = BScell2Pcell_delay, synst=I_BSC+6, synend=I_BSC+11)) # BSC_PC
 
-connlist.append(popConn(popname="BistratifiedCell",    prepop="BistratifiedCell", prenum=1, type="GABAA", weight = BScell2BScell_weight, delay = BScell2BScell_delay, synst=II_SAME, synend=II_SAME)) # BSC_BC
+#connlist.append(popConn(popname="BistratifiedCell",    prepop="BistratifiedCell", prenum=1, type="GABAA", weight = BScell2BScell_weight, delay = BScell2BScell_delay, synst=II_SAME, synend=II_SAME)) # BSC_BC
 connlist.append(popConn(popname="BasketCell",    prepop="BistratifiedCell", prenum=1, type="GABAA", weight = BScell2Bcell_weight, delay = BScell2Bcell_delay, synst=II_OPP, synend=II_OPP)) # BSC_BC
 
 connlist.append(popConn(popname="PyramidalCell", prepop="OLMCell", prenum=1, type="GABAA", weight = OLMcell2Pcell_weight, delay = OLMcell2Pcell_delay, synst=I_OLM, synend=I_OLM+1)) # OLM_PC
@@ -330,8 +305,64 @@ h.mcell_ran4_init(connect_random_low_start_)
 nclist = []
 
 # # Make connections with data from above
-# for conn in connlist: 
-#     connectcells(dictpop[conn.popname].num, dictpop[conn.popname].gidst, dictpop[conn.prepop].num, dictpop[conn.prepop].gidst, conn.prenum, conn.synst, conn.synend, conn.delay, conn.weight)
+for conn in connlist: 
+    print(conn)
+    netfcns.connectcells(cells,ranlist, nclist, npost=dictpop[conn.popname].num, postgidstart=dictpop[conn.popname].gidst, npre = dictpop[conn.prepop].num, pregidstart = dictpop[conn.prepop].gidst, synstart=conn.synst, synend=conn.synend, npresyn=conn.prenum, weight=conn.weight, delay= conn.delay)
+
+
+
+
+#netfcns.mkinputs(cells, iCA3, iEC, iSEP, ntot, dictpop)
+# EC input to PCs
+netfcns.connectEC(FPATT, ECPATT, NPATT, E_EC, 2, cells, iPC, iEC, dictpop)	#  restore existing pattern
+# CA3 input to PCs
+netfcns.connectCA3(FCONN, C_P, EM_CA3, EN_CA3, cells, dictpop)	# with modifiable synapses
 
 
 # h.xopen("HAM_StoRec_ser_diet.hoc")
+
+
+netfcns.mkcue(FPATT, CPATT, CFRAC, NPATT, SPATT, cells, iCA3, ranlist)	# cue from already stored pattern
+#mkcue(FSTORE, CPATT, CFRAC, NSTORE)	# cue from new pattern
+netfcns.mkEC(cells, ranlist, iEC, dictpop["ECCell"].num)
+
+netfcns.spikerecord(cells)
+results = netfcns.vrecord(cells,dictpop)
+
+fstem = "Results/HAM_P5R1"
+
+h.tstop = 100 #h.SIMDUR
+h.celsius = 34
+
+
+
+h('StepBy=100') # ms
+
+h('walltime = startsw()')
+h.xopen("midbalfcn.hoc")
+h('objref fihw')
+h('fihw = new FInitializeHandler(2, "midbal()")')
+
+
+
+#if (h.batchflag==1):
+print("Now running simulation at scale = ", scaleDown, " for time = ", h.SIMDUR, " with scaleEScon = ", h.scaleEScon)
+h.run()
+netfcns.spikeout(cells,fstem)
+netfcns.vout(cells,results,fstem,dictpop)
+print( "** Finished running sim and printing results **")
+if (h.plotflag==1):
+    netfcns.spikeplot(cells,h.tstop,ntot)
+    netfcns.vplot(cells,results)
+ 
+print( "** Finished plotting **")
+# else:
+# 	# panel for simulation results
+# 	h.xopen("HAM_SR.ses")
+# 	xspikeres()
+
+
+
+
+# At end
+#spikeout(cells,fstem)
