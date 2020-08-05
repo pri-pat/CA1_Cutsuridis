@@ -113,7 +113,6 @@ ntot = ncell+nstim # total number of cells
 # argument is the number of cells to be created
 cells = []
 ranlist = []
-gidvec = []
 nclist = []
 h('{load_file("ranstream.hoc")}')  # to give each cell its own sequence generator
 
@@ -124,7 +123,6 @@ for pop in poplist:
         exec("newcell = "+pop.classtype+ "(int("+str(i)+"))")
         cells.append(newcell)
         ranlist.append(h.RandomStream(i))  # ranlist.o(i) corresponds to
-        gidvec.append(i)
         i+=1
 #%%
 
@@ -132,32 +130,7 @@ for pop in poplist:
 # SET STIMULATION
 #################
 
-
-# Configures the stimulation:
-
-for i in range(int(dictpop["CA3Cell"].gidst),int(dictpop["CA3Cell"].gidend+1)):
-    cells[i].stim.number = ENUM
-    cells[i].stim.start = ESTART
-    cells[i].stim.interval = EINT
-    cells[i].stim.noise = ENOISE
-
-for i in range(int(dictpop["ECCell"].gidst),int(dictpop["ECCell"].gidend+1)):
-    cells[i].stim.number = ENUM
-    cells[i].stim.start = ESTART
-    cells[i].stim.interval = EINT
-    cells[i].stim.noise = ENOISE
-
-
-for i in range(int(dictpop["SEPCell"].gidst),int(dictpop["SEPCell"].gidend+1)):
-    cells[i].stim.number = SEPNUM
-    cells[i].stim.start = SEPSTART
-    cells[i].stim.interval = SEPINT
-    cells[i].stim.noise = SEPNOISE
-    cells[i].stim.burstint = SEPBINT
-    cells[i].stim.burstlen = SEPBLEN
-    
-    # Use the gid-specific random generator so random streams are
-    # independent of where and how many stims there are.
+netfcns.mkinputs(cells, dictpop)
 
 #%%
 
@@ -284,9 +257,6 @@ for conn in connlist:
     print(conn)
     netfcns.connectcells(cells,ranlist, nclist, npost=dictpop[conn.popname].num, postgidstart=dictpop[conn.popname].gidst, npre = dictpop[conn.prepop].num, pregidstart = dictpop[conn.prepop].gidst, synstart=conn.synst, synend=conn.synend, npresyn=conn.prenum, weight=conn.weight, delay= conn.delay)
 
-
-
-
 #netfcns.mkinputs(cells, dictpop['CA3Cell'].gidst, dictpop['ECCell'].gidst, dictpop['SEPCell'].gidst, ntot, dictpop)
 # EC input to PCs
 netfcns.connectEC(FPATT, ECPATT, NPATT, E_EC, 2, cells, dictpop['PyramidalCell'].gidst, dictpop['ECCell'].gidst, dictpop)	#  restore existing pattern
@@ -299,7 +269,7 @@ netfcns.connectCA3(FCONN, C_P, EM_CA3, EN_CA3, cells, dictpop)	# with modifiable
 #################
 
 netfcns.mkcue(FPATT, CPATT, CFRAC, NPATT, SPATT, cells, dictpop['CA3Cell'].gidst, ranlist)	# cue from already stored pattern
-#mkcue(FSTORE, CPATT, CFRAC, NSTORE)	# cue from new pattern
+#netfcns.mkcue(FSTORE, CPATT, CFRAC, NSTORE)	# cue from new pattern
 netfcns.mkEC(cells, ranlist, dictpop['ECCell'].gidst, dictpop["ECCell"].num)
 
 #%%
@@ -319,6 +289,8 @@ results = netfcns.vrecord(cells,dictpop, iPPC, iNPPC)
 # RUN SIMULATION AND WRITE RESULTS
 #################
 
+# Set a NEURON function (midbal) to run at a specific
+# time/event during the simulation:
 h('StepBy=100') # ms
 
 h('walltime = startsw()')
@@ -327,10 +299,12 @@ h('objref fihw')
 h('fihw = new FInitializeHandler(2, "midbal()")')
 
 
-
-#if (batchflag==1):
-print("Now running simulation at scale = ", scaleDown, " for time = ", h.SIMDUR, " with scaleEScon = ", scaleEScon)
+# run the simulation
+# if (batchflag==1):
+print("Now running simulation at scale = ", scaleDown, " for time = ", SIMDUR, " with scaleEScon = ", scaleEScon)
 h.run()
+
+# print out the results
 netfcns.spikeout(cells,fstem)
 netfcns.vout(cells,results,fstem,dictpop)
 print( "** Finished running sim and printing results **")

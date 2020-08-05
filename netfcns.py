@@ -141,40 +141,35 @@ def connectCA3(FCONN, C_P, EM_CA3, EN_CA3, cells, dictpop): # {local i, j, cp, g
 
 
 # sets the CA3, EC and Septal background inputs
-def mkinputs(cells, iCA3, iEC, iSEP, ntot, dictpop): #{local i localobj stim, rs
-    for cell in cells:
-        gid = cell.gid    # id of cell
-        if (gid >= iCA3 and gid < ntot-dictpop["SEPCell"].num-dictpop["ECCell"].num):    # appropriate target cell
-            # set background activity for excitatory inputs
-            stim = cell.stim
-            stim.number = ENUM
-            stim.start = ESTART
-            stim.interval = EINT
-            stim.noise = ENOISE
-        
-        if (gid >= iEC and gid < ntot-dictpop["SEPCell"].num):    # appropriate target cell
-            # set background activity for excitatory inputs
-            stim = cell.stim
-            stim.number = ENUM
-            stim.start = ESTART
-            stim.interval = EINT
-            stim.noise = ENOISE
+def mkinputs(cells, dictpop): #{local i localobj stim, rs 
+    # Configures the stimulation:
     
-        if (gid >= iSEP and gid < ntot):    # appropriate target cell
-            # set background activity for septum
-            stim = cell.stim
-            rs = ranlist[i]
-            stim.number = SEPNUM
-            stim.start = SEPSTART
-            stim.interval = SEPINT
-            stim.noise = SEPNOISE
-            stim.burstint = SEPBINT
-            stim.burstlen = SEPBLEN
-            # Use the gid-specific random generator so random streams are
-            # independent of where and how many stims there are.
-            stim.noiseFromRandom(rs.r)
-            rs.r.negexp(1)
-            rs.start()
+    for i in range(int(dictpop["CA3Cell"].gidst),int(dictpop["CA3Cell"].gidend+1)):
+        cells[i].stim.number = ENUM
+        cells[i].stim.start = ESTART
+        cells[i].stim.interval = EINT
+        cells[i].stim.noise = ENOISE
+    
+    for i in range(int(dictpop["ECCell"].gidst),int(dictpop["ECCell"].gidend+1)):
+        cells[i].stim.number = ENUM
+        cells[i].stim.start = ESTART
+        cells[i].stim.interval = EINT
+        cells[i].stim.noise = ENOISE
+    
+    for i in range(int(dictpop["SEPCell"].gidst),int(dictpop["SEPCell"].gidend+1)):
+        cells[i].stim.number = SEPNUM
+        cells[i].stim.start = SEPSTART
+        cells[i].stim.interval = SEPINT
+        cells[i].stim.noise = SEPNOISE
+        cells[i].stim.burstint = SEPBINT
+        cells[i].stim.burstlen = SEPBLEN
+               
+        rs = ranlist[i]
+        # Use the gid-specific random generator so random streams are
+        # independent of where and how many stims there are.
+        stim.noiseFromRandom(rs.r)
+        rs.r.negexp(1)
+        rs.start()
             
 #########################
 # Instrumentation, i.e. stimulation and recording
@@ -203,16 +198,12 @@ def mkEC(cells, ranlist, iEC, nEC): # {local i, necs localobj cstim, rs
             EClist.append(i)
             necs += 1
 
-
-
-
 # setup activity pattern in input cue stims
 def mkcue(FPATT, CPATT, CFRAC, NPATT, SPATT, cells, iCA3, ranlist):
     print( "Make cue (CA3) input...")
     cuelist = []
     # open patterns file
     cue = np.loadtxt(fname = FPATT) # read pattern
-
 
     ncue = 0
     # find active cells in pattern
@@ -270,16 +261,7 @@ def spikerecord(cells):
 # Vectors that record voltages from non-pattern PC
 # Vectors that record voltages from INs
 
-def vrecord(cells,dictpop):
-    iPC = dictpop['PyramidalCell'].gidst
-    iBC = dictpop['BasketCell'].gidst
-    iAAC = dictpop['AACell'].gidst
-    iBSC = dictpop['BistratifiedCell'].gidst
-    iOLM = dictpop['OLMCell'].gidst
-    iCA3 = dictpop['CA3Cell'].gidst
-    iEC = dictpop['ECCell'].gidst
-    iSEP = dictpop['SEPCell'].gidst    
-    
+def vrecord(cells,dictpop, iPPC, iNPPC):    
     print( "Record example voltage traces...")
     results = {}
     for cell in cells:	# loop over possible target cells
@@ -294,19 +276,19 @@ def vrecord(cells,dictpop):
             results["npvsr"] = h.Vector().record(cell.radTmed(0.5)._ref_v)
             results["npvslm"] = h.Vector().record(cell.lm_thick1(0.5)._ref_v)
 
-        if (gid==iBC):
+        if (gid==dictpop['BasketCell'].gidst):
             results["vBC"] = h.Vector().record(cell.soma(0.5)._ref_v)
             print("Recording results into vBC from ", cell)
 
-        if (gid==iAAC):
+        if (gid==dictpop['AACell'].gidst):
             results["vAAC"] = h.Vector().record(cell.soma(0.5)._ref_v)
             print("Recording results into vAAC from ", cell)
 
-        if (gid==iBSC):
+        if (gid==dictpop['BistratifiedCell'].gidst):
             results["vBSC"] = h.Vector().record(cell.soma(0.5)._ref_v)
             print("Recording results into vBSC from ", cell)
 
-        if (gid==iOLM):
+        if (gid==dictpop['OLMCell'].gidst):
             results["vOLM"] = h.Vector().record(cell.soma(0.5)._ref_v)
             print("Recording results into vOLM from ", cell)
 

@@ -7,5 +7,7 @@ proc midbal() {local wt, thisstep
 	}
 	
 	walltime = wt
+	
+	// Set the function to run again after a set amount of simulation time has passed
 	cvode.event(t+StepBy, "midbal()")
 }

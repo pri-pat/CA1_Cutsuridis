@@ -4,68 +4,27 @@ Created on Sat Aug  1 13:05:11 2020
 
 @author: mbezaire
 """
-from neuron import h
 
 connect_random_low_start_ = 1  # low seed for mcell_ran4_init()
 
 
-Pcell2Pcell_weight = 0.001
-Pcell2Pcell_delay = 1
 
-Bcell2Pcell_weight = 0.02
-Bcell2Pcell_delay = 1
-Pcell2Bcell_weight = 0.0005 
-Pcell2Bcell_delay = 1
-Bcell2Bcell_weight = 0.001
-Bcell2Bcell_delay = 1
-Bcell2BScell_weight = 0.02
-Bcell2BScell_delay = 1
-Bcell2OLMcell_weight = 0.0
-Bcell2OLMcell_delay = 1
+STARTDEL = 50    # msecs
+THETA = 250    # msecs (4 Hz)
+GAMMA = 25    # msecs (40 Hz)
+ECCA3DEL = 9    # msecs
+numCycles = 8
 
-AAcell2Pcell_weight = 0.04
-AAcell2Pcell_delay = 1
-Pcell2AAcell_weight = 0.0005
-Pcell2AAcell_delay = 1
-
-BScell2Pcell_weight = 0.002	
-BScell2Pcell_delay = 1
-BScell2BScell_weight = 0.002	# Parameter not set in original code
-BScell2BScell_delay = 1	# Parameter not set in original code
-BScell2Pcell_GABAB_weight = 0.0004
-BScell2Pcell_delay = 1
-Pcell2BScell_weight = 0.0005
-Pcell2BScell_delay = 1
-BScell2Bcell_weight = 0.01
-BScell2Bcell_delay = 1
-
-OLMcell2Pcell_weight = 0.04
-OLMcell2Pcell_GABAB_weight = 0.0004
-OLMcell2Pcell_delay = 1
-OLMcell2Bcell_weight = 0.01
-OLMcell2Bcell_delay = 1
-Pcell2OLMcell_weight = 0.00005
-Pcell2OLMcell_delay = 1
-OLMcell2Bcell_weight = 0.0
-OLMcell2Bcell_delay = 1
-
-h('STARTDEL = 50')    # msecs
-h('THETA = 250')    # msecs (4 Hz)
-h('GAMMA = 25')    # msecs (40 Hz)
-h('ECCA3DEL = 9')    # msecs
-h('SIMDUR = 0')    # msecs
-
-# h.SIMDUR = h.STARTDEL + (h.THETA*2) # Scaled down for testing code for technical bugs only
-h.SIMDUR = 100 #h.STARTDEL + (h.THETA*h.numCycles)    # simulation duration (msecs)
+SIMDUR = STARTDEL + (THETA*numCycles)    # simulation duration (msecs)
 
 
 # Septal inhibition
 SEPNUM = 1000    # number of SEP spikes
-SEPSTART = h.STARTDEL+(h.THETA/12)    # time of first SEP spike
+SEPSTART = STARTDEL+(THETA/12)    # time of first SEP spike
 SEPINT = 20    # SEP spike ISI (during burst)
 SEPNOISE = 0.4    # SEP ISI noise
-SEPBINT = 2*h.THETA/3    # SEP interburst interval
-SEPBLEN = h.THETA/3    # SEP burst length
+SEPBINT = 2*THETA/3    # SEP interburst interval
+SEPBLEN = THETA/3    # SEP burst length
 SEPWGT = 0.02	# SEP weight to BCs and AACs
 SEPWGTL = 0.0002	# SEP weight to BSCs and OLMs
 SEPDEL = 1	# SEP delay
@@ -82,8 +41,8 @@ EDEL = 1    # delay (msecs)
 # EC excitation
 ECPATT = 1    # index of output pattern
 ECNUM = 1000    # number of EC spikes
-ECSTART = h.STARTDEL    # time of first EC spike
-ECINT = h.GAMMA    # EC spike ISI
+ECSTART = STARTDEL    # time of first EC spike
+ECINT = GAMMA    # EC spike ISI
 ECNOISE = 0.2    # EC ISI noise
 ECWGT = 0.0    # EC weight to PCs
 #ECWGT = 0.001    # EC weight to PCs
@@ -93,8 +52,8 @@ EIDEL = 1    # delay (msecs)
 
 # Cue (CA3) excitation
 CNUM = 1000    # number of cue spikes
-CSTART = h.STARTDEL+h.ECCA3DEL    # time of first cue spike
-CINT = h.GAMMA    # cue spike ISI
+CSTART = STARTDEL+ECCA3DEL    # time of first cue spike
+CINT = GAMMA    # cue spike ISI
 CNOISE = 0.2    # cue ISI noise
 CHWGT = 0.0015    # cue weight
 CLWGT = 0.0005    # unlearnt weight (usually 0)
@@ -108,15 +67,16 @@ STDPPFAC = 0    # potentiation factor
 #STDPPFAC = 1.0    # potentiation factor
 AMPASUPP = 0.4    # fraction of AMPA during storage
 STDPTHRESH = -55    # voltage threshold for STDP
-STDPSTART = h.STARTDEL+(h.THETA/2)    # STDP starts at same time as EC input
-STDPINT = h.THETA/2    # STDP interburst (recall) interval
-STDPLEN = h.THETA/2    # STDP burst (storage) length
+STDPSTART = STARTDEL+(THETA/2)    # STDP starts at same time as EC input
+STDPINT = THETA/2    # STDP interburst (recall) interval
+STDPLEN = THETA/2    # STDP burst (storage) length
 
 C_P = 1  # probability of excitatory connections received by each CA1 PC
          # from CA3 inputs (1 gives full connectivity)
 def calcSPATT(scaleDown):        
     SPATT = 20*scaleDown	# number of active cells per pattern
     return SPATT
+
 NPATT = 5	# number of stored patterns
 NSTORE = 5	# number of new patterns to store
 
@@ -127,11 +87,11 @@ iNPPC=0		# index of a non-pattern PC (1st patt in 5 patterns)
 
 # Septal inhibition
 SEPNUM = 1000    # number of SEP spikes
-SEPSTART = h.STARTDEL+(h.THETA/12)    # time of first SEP spike
+SEPSTART = STARTDEL+(THETA/12)    # time of first SEP spike
 SEPINT = 20    # SEP spike ISI (during burst)
 SEPNOISE = 0.4    # SEP ISI noise
-SEPBINT = 2*h.THETA/3    # SEP interburst interval
-SEPBLEN = h.THETA/3    # SEP burst length
+SEPBINT = 2*THETA/3    # SEP interburst interval
+SEPBLEN = THETA/3    # SEP burst length
 SEPWGT = 0.02	# SEP weight to BCs and AACs
 SEPWGTL = 0.0002	# SEP weight to BSCs and OLMs
 SEPDEL = 1	# SEP delay
@@ -148,8 +108,8 @@ EDEL = 1    # delay (msecs)
 # EC excitation
 ECPATT = 1    # index of output pattern
 ECNUM = 1000    # number of EC spikes
-ECSTART = h.STARTDEL    # time of first EC spike
-ECINT = h.GAMMA    # EC spike ISI
+ECSTART = STARTDEL    # time of first EC spike
+ECINT = GAMMA    # EC spike ISI
 ECNOISE = 0.2    # EC ISI noise
 ECWGT = 0.0    # EC weight to PCs
 #ECWGT = 0.001    # EC weight to PCs
@@ -159,8 +119,8 @@ EIDEL = 1    # delay (msecs)
 
 # Cue (CA3) excitation
 CNUM = 1000    # number of cue spikes
-CSTART = h.STARTDEL+h.ECCA3DEL    # time of first cue spike
-CINT = h.GAMMA    # cue spike ISI
+CSTART = STARTDEL+ECCA3DEL    # time of first cue spike
+CINT = GAMMA    # cue spike ISI
 CNOISE = 0.2    # cue ISI noise
 CHWGT = 0.0015    # cue weight
 CLWGT = 0.0005    # unlearnt weight (usually 0)
@@ -174,6 +134,6 @@ STDPPFAC = 0    # potentiation factor
 #STDPPFAC = 1.0    # potentiation factor
 AMPASUPP = 0.4    # fraction of AMPA during storage
 STDPTHRESH = -55    # voltage threshold for STDP
-STDPSTART = h.STARTDEL+(h.THETA/2)    # STDP starts at same time as EC input
-STDPINT = h.THETA/2    # STDP interburst (recall) interval
-STDPLEN = h.THETA/2    # STDP burst (storage) length
+STDPSTART = STARTDEL+(THETA/2)    # STDP starts at same time as EC input
+STDPINT = THETA/2    # STDP interburst (recall) interval
+STDPLEN = THETA/2    # STDP burst (storage) length
