@@ -244,7 +244,8 @@ objref cells, nclist, ncslist, ncelist  // cells will be a List that holds
   // and connect network spike sources to targets on this host (nclist)
   // ncslist holds NetConns from input spike sources (NetStims)
 objref ranlist  // for RandomStreams on this host
-objref stims, stimlist, cuelist, EClist	// phasic and tonic cell stimulation
+
+objref stims, stimlist, cuelist, EClist	// phasic and tonic cell stimulation
 
 objref gidvec  // to associate gid and position in cells List
   // useful for setting up connections and reporting connectivity

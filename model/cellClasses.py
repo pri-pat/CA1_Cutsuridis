@@ -8,20 +8,29 @@ Created on Tue Aug  4 21:53:18 2020
 
 from neuron import h
 
-class PyramidalCell():
+class modelcell():
+    def __init__(self):
+        self.x = 0; self.y = 0; self.z = 0
+
+        self.gid = -1
+        self.core_i=-1
+        self.coretype_i=-1
+        
+        self.is_art = 0
+        self.nc = []
+        self.pre_list = []
+
+class PyramidalCell(modelcell):
     """ Pyramidal Cell definition """
     def __init__(self, gid = -1):
-        self.x = 0; self.y = 0; self.z = 0
+        super().__init__()
         self.gid = gid
         self.create_sections() 
         self.build_topology()
         self.build_subsets() # subsets()
         self.define_geometry() # geom()
         self.define_biophysics() # biophys()
-        # pre_list = new List()
         self.addSynapses() # synapses
-        self.is_art = 0
-        self.nc = []
         
     def __repr__(self):
         return "Pyramidal Cell {}".format(self.gid)
@@ -699,20 +708,18 @@ class PyramidalCell():
         syn_.tau2 = 3
         syn_.e = 0
         
-class OLMCell():
+class OLMCell(modelcell):
     """ OLM Cell definition """
     def __init__(self, gid = -1):
-        self.x = 0; self.y = 0; self.z = 0
+        super().__init__()
         self.gid = gid
         self.create_sections() 
         self.build_topology()
         self.build_subsets() # subsets()
         self.define_geometry() # geom()
         self.define_biophysics() # biophys()
-        # pre_list = new List()
         self.addSynapses() # synapses
-        self.is_art = 0
-        self.nc = []
+
         
     def __repr__(self):
         return "OLM Cell {}".format(self.gid)
@@ -853,20 +860,17 @@ class OLMCell():
         syn_.e = -75
 
 
-class BasketCell():
+class BasketCell(modelcell):
     """ Basket Cell definition """
     def __init__(self, gid = -1):
-        self.x = 0; self.y = 0; self.z = 0
+        super().__init__()
         self.gid = gid
         self.create_sections() 
         self.build_topology()
         self.build_subsets() # subsets()
         self.define_geometry() # geom()
         self.define_biophysics() # biophys()
-        # pre_list = new List()
         self.addSynapses() # synapses
-        self.is_art = 0
-        self.nc = []
         
     def __repr__(self):
         return "Basket Cell {}".format(self.gid)
@@ -1298,20 +1302,17 @@ class BasketCell():
         syn_.e = -75
 
 
-class AACell():
+class AACell(modelcell):
     """ Axo-axonic Cell definition """
     def __init__(self, gid = -1):
-        self.x = 0; self.y = 0; self.z = 0
+        super().__init__()
         self.gid = gid
         self.create_sections() 
         self.build_topology()
         self.build_subsets() # subsets()
         self.define_geometry() # geom()
         self.define_biophysics() # biophys()
-        # pre_list = new List()
         self.addSynapses() # synapses
-        self.is_art = 0
-        self.nc = []
         
     def __repr__(self):
         return "Axo-axonic Cell {}".format(self.gid)
@@ -1742,20 +1743,17 @@ class AACell():
         syn_.tau2 = 100
         syn_.e = -75
         
-class BistratifiedCell():
+class BistratifiedCell(modelcell):
     """ Bistratified Cell definition """
     def __init__(self, gid = -1):
-        self.x = 0; self.y = 0; self.z = 0
+        super().__init__()
         self.gid = gid
         self.create_sections() 
         self.build_topology()
         self.build_subsets() # subsets()
         self.define_geometry() # geom()
         self.define_biophysics() # biophys()
-        # pre_list = new List()
         self.addSynapses() # synapses
-        self.is_art = 0
-        self.nc = []
         
     def __repr__(self):
         return "Bistratified Cell {}".format(self.gid)
@@ -2129,10 +2127,13 @@ class BistratifiedCell():
         syn_.tau2 = 100
         syn_.e = -75
 
-class BurstCell():  
+class BurstCell(modelcell):  
     """ Burst cell with stim attribute that references a BurstStim2 point process """
     def __init__(self, gid=-1):
+        super().__init__()
         self.gid = gid
+
+        
         self.is_art =1
         self.ncstim = []
         self.stim = h.BurstStim2()
@@ -2155,10 +2156,12 @@ class BurstCell():
 
 
 
-class StimCell():  
+class StimCell(modelcell):  
     """ Stim cell with stim attribute that references a RegnStim point process """
     def __init__(self, gid=-1):
+        super().__init__()
         self.gid = gid
+
         self.is_art =1
         self.ncstim = []
         #self.stim = h.BurstStim2()

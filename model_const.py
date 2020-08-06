@@ -5,18 +5,10 @@ Created on Sat Aug  1 13:05:11 2020
 @author: mbezaire
 """
 
-connect_random_low_start_ = 1  # low seed for mcell_ran4_init()
-
-
-
 STARTDEL = 50    # msecs
 THETA = 250    # msecs (4 Hz)
 GAMMA = 25    # msecs (40 Hz)
 ECCA3DEL = 9    # msecs
-numCycles = 8
-
-SIMDUR = STARTDEL + (THETA*numCycles)    # simulation duration (msecs)
-
 
 # Septal inhibition
 SEPNUM = 1000    # number of SEP spikes
