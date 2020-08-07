@@ -1033,42 +1033,42 @@ class BasketCell(modelcell):
             seg.gnatbar_ichan2 = gna  		# 0.12 //original 0.030 to .055 
             seg.gkfbar_ichan2 = 0.013  		# original 0.015
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.soma.cm=1.4
         
         self.lmt1.insert("ichan2")
         for seg in self.lmt1:
             seg.gnatbar_ichan2 = gna  		# 0.4  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.lmt1.cm=1.4
         
         self.lmt2.insert("ichan2")
         for seg in self.lmt2:
             seg.gnatbar_ichan2 = gna  		# 0.4  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.lmt2.cm=1.4
         
         self.lmM1.insert("ichan2")
         for seg in self.lmM1:
             seg.gnatbar_ichan2 = gna  		# 0.4  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.lmM1.cm=1.4
         
         self.lmM2.insert("ichan2")
         for seg in self.lmM2:
             seg.gnatbar_ichan2 = gna  		# 0.4  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.lmM2.cm=1.4
         
         self.radt1.insert("ichan2")
         for seg in self.radt1:
             seg.gnatbar_ichan2 = gna  		# 0.4  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.radt1.cm=1.4
 
         
         self.radt2.insert("ichan2")
@@ -1076,7 +1076,7 @@ class BasketCell(modelcell):
             seg.gnatbar_ichan2 = gna  		# 0.4  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.radt2.cm=1.4
 
         
         self.radM1.insert("ichan2")
@@ -1084,14 +1084,14 @@ class BasketCell(modelcell):
             seg.gnatbar_ichan2 = gna  		# 0.3  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.radM1.cm=1.4
         
         self.radM2.insert("ichan2")
         for seg in self.radM2:
             seg.gnatbar_ichan2 = gna  		# 0.3  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.radM2.cm=1.4
 
         
         self.radT1.insert("ichan2")
@@ -1099,28 +1099,28 @@ class BasketCell(modelcell):
             seg.gnatbar_ichan2 = gna  		# 0.2  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.radT1.cm=1.4
         
         self.radT2.insert("ichan2")
         for seg in self.radT2:
             seg.gnatbar_ichan2 = gna  		# 0.2  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.radT2.cm=1.4
         
         self.oriT1.insert("ichan2")
         for seg in self.oriT1:
             seg.gnatbar_ichan2 = gna  		# original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.oriT1.cm=1.4
         
         self.oriT2.insert("ichan2")
         for seg in self.oriT2:
             seg.gnatbar_ichan2 = gna  		# original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.oriT2.cm=1.4
 
         
         self.oriM1.insert("ichan2")
@@ -1128,40 +1128,30 @@ class BasketCell(modelcell):
             seg.gnatbar_ichan2 = gna  		# original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.oriM1.cm=1.4
         
         self.oriM2.insert("ichan2")
         for seg in self.oriM2:
             seg.gnatbar_ichan2 = gna  		# original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.oriM2.cm=1.4
         
         self.orit1.insert("ichan2")
         for seg in self.orit1:
             seg.gnatbar_ichan2 = gna  		# Sodium conductance (original 0.015)
             seg.gkfbar_ichan2 = 0.013  		# Delayed K+ rectifier (fast)
             seg.gl_ichan2 = 0.00018         # Leak conductance
-            cm=1.4
+        self.orit1.cm=1.4
         
         self.orit2.insert("ichan2")
         for seg in self.orit2:
             seg.gnatbar_ichan2 = gna  		# Sodium conductance (original 0.015)
             seg.gkfbar_ichan2 = 0.013  		# Delayed K+ rectifier (fast)
             seg.gl_ichan2 = 0.00018         # Leak conductance
-            cm=1.4
+        self.orit2.cm=1.4
         
-        for sec in self.all:
-            # self.cm = Not setting cm
-            self.Ra = 100			# 31.3 +/- 10.9
-            self.enat = 55
-            self.ekf = -90
-            self.ek = -90
-            self.elca = 130
-            self.esk = -90
-            self.el_ichan2 = -60			#-60.06
-            self.cao_ccanl = 2
-            
+        for sec in self.all:            
             sec.insert("ccanl")
             for seg in sec:
                 seg.catau_ccanl = 10		# Time constant for decay of intracellular Ca2+
@@ -1189,7 +1179,16 @@ class BasketCell(modelcell):
             for seg in sec:
                 seg.gkbar_mykca = 0.0002			# Ca2+ and Voltage-dependent K+ (BK) conductance
 		 					# make catau slower70e-3 	cao=2 cai=50.e-6
-
+            # self.cm = Not setting cm
+            sec.Ra = 100			# 31.3 +/- 10.9
+            sec.enat = 55
+            sec.ekf = -90
+            sec.ek = -90
+            sec.elca = 130
+            sec.esk = -90
+            sec.el_ichan2 = -60			#-60.06
+        self.cao_ccanl = 2
+            
 
     def connect2target(self,target, delay = 1, weight=0.04): # { localobj nc #$o1 target point process, optional $o2 returned NetCon
         self.nc.append(h.NetCon(self.soma(0.5)._ref_v, target, sec=self.soma))
@@ -1475,42 +1474,42 @@ class AACell(modelcell):
             seg.gnatbar_ichan2 = gna  		# 0.12 //original 0.030 to .055 
             seg.gkfbar_ichan2 = 0.013  		# original 0.015
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.soma.cm=1.4
         
         self.lmt1.insert("ichan2")
         for seg in self.lmt1:
             seg.gnatbar_ichan2 = gna  		# 0.4  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.lmt1.cm=1.4
         
         self.lmt2.insert("ichan2")
         for seg in self.lmt2:
             seg.gnatbar_ichan2 = gna  		# 0.4  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.lmt2.cm=1.4
         
         self.lmM1.insert("ichan2")
         for seg in self.lmM1:
             seg.gnatbar_ichan2 = gna  		# 0.4  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.lmM1.cm=1.4
         
         self.lmM2.insert("ichan2")
         for seg in self.lmM2:
             seg.gnatbar_ichan2 = gna  		# 0.4  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.lmM2.cm=1.4
         
         self.radt1.insert("ichan2")
         for seg in self.radt1:
             seg.gnatbar_ichan2 = gna  		# 0.4  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.radt1.cm=1.4
 
         
         self.radt2.insert("ichan2")
@@ -1518,7 +1517,7 @@ class AACell(modelcell):
             seg.gnatbar_ichan2 = gna  		# 0.4  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.radt2.cm=1.4
 
         
         self.radM1.insert("ichan2")
@@ -1526,14 +1525,14 @@ class AACell(modelcell):
             seg.gnatbar_ichan2 = gna  		# 0.3  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.radM1.cm=1.4
         
         self.radM2.insert("ichan2")
         for seg in self.radM2:
             seg.gnatbar_ichan2 = gna  		# 0.3  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.radM2.cm=1.4
 
         
         self.radT1.insert("ichan2")
@@ -1541,28 +1540,28 @@ class AACell(modelcell):
             seg.gnatbar_ichan2 = gna  		# 0.2  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.radT1.cm=1.4
         
         self.radT2.insert("ichan2")
         for seg in self.radT2:
             seg.gnatbar_ichan2 = gna  		# 0.2  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.radT2.cm=1.4
         
         self.oriT1.insert("ichan2")
         for seg in self.oriT1:
             seg.gnatbar_ichan2 = gna  		# original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.oriT1.cm=1.4
         
         self.oriT2.insert("ichan2")
         for seg in self.oriT2:
             seg.gnatbar_ichan2 = gna  		# original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.oriT2.cm=1.4
 
         
         self.oriM1.insert("ichan2")
@@ -1570,39 +1569,31 @@ class AACell(modelcell):
             seg.gnatbar_ichan2 = gna  		# original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.oriM1.cm=1.4
         
         self.oriM2.insert("ichan2")
         for seg in self.oriM2:
             seg.gnatbar_ichan2 = gna  		# original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.oriM2.cm=1.4
         
         self.orit1.insert("ichan2")
         for seg in self.orit1:
             seg.gnatbar_ichan2 = gna  		# Sodium conductance (original 0.015)
             seg.gkfbar_ichan2 = 0.013  		# Delayed K+ rectifier (fast)
             seg.gl_ichan2 = 0.00018         # Leak conductance
-            cm=1.4
+        self.orit1.cm=1.4
         
         self.orit2.insert("ichan2")
         for seg in self.orit2:
             seg.gnatbar_ichan2 = gna  		# Sodium conductance (original 0.015)
             seg.gkfbar_ichan2 = 0.013  		# Delayed K+ rectifier (fast)
             seg.gl_ichan2 = 0.00018         # Leak conductance
-            cm=1.4
+        self.orit2.cm=1.4
         
         for sec in self.all:
             # self.cm = Not setting cm
-            self.Ra = 100			# 31.3 +/- 10.9
-            self.enat = 55
-            self.ekf = -90
-            self.ek = -90
-            self.elca = 130
-            self.esk = -90
-            self.el_ichan2 = -60			#-60.06
-            self.cao_ccanl = 2
             
             sec.insert("ccanl")
             for seg in sec:
@@ -1631,6 +1622,14 @@ class AACell(modelcell):
             for seg in sec:
                 seg.gkbar_mykca = 0.0002			# Ca2+ and Voltage-dependent K+ (BK) conductance
 		 					# make catau slower70e-3 	cao=2 cai=50.e-6
+            sec.Ra = 100			# 31.3 +/- 10.9
+            sec.enat = 55
+            sec.ekf = -90
+            sec.ek = -90
+            sec.elca = 130
+            sec.esk = -90
+            sec.el_ichan2 = -60			#-60.06
+        self.cao_ccanl = 2
 
 
     def connect2target(self,target, delay = 1, weight=0.04): # { localobj nc #$o1 target point process, optional $o2 returned NetCon
@@ -1884,14 +1883,14 @@ class BistratifiedCell(modelcell):
             seg.gnatbar_ichan2 = gna  		# 0.12 //original 0.030 to .055 
             seg.gkfbar_ichan2 = 0.013  		# original 0.015
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.soma.cm=1.4
         
         self.radt1.insert("ichan2")
         for seg in self.radt1:
             seg.gnatbar_ichan2 = gna  		# 0.4  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.radt1.cm=1.4
 
         
         self.radt2.insert("ichan2")
@@ -1899,7 +1898,7 @@ class BistratifiedCell(modelcell):
             seg.gnatbar_ichan2 = gna  		# 0.4  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.radt2.cm=1.4
 
         
         self.radM1.insert("ichan2")
@@ -1907,14 +1906,14 @@ class BistratifiedCell(modelcell):
             seg.gnatbar_ichan2 = gna  		# 0.3  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.radM1.cm=1.4
         
         self.radM2.insert("ichan2")
         for seg in self.radM2:
             seg.gnatbar_ichan2 = gna  		# 0.3  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.radM2.cm=1.4
 
         
         self.radT1.insert("ichan2")
@@ -1922,28 +1921,28 @@ class BistratifiedCell(modelcell):
             seg.gnatbar_ichan2 = gna  		# 0.2  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.radT1.cm=1.4
         
         self.radT2.insert("ichan2")
         for seg in self.radT2:
             seg.gnatbar_ichan2 = gna  		# 0.2  	//original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.radT2.cm=1.4
         
         self.oriT1.insert("ichan2")
         for seg in self.oriT1:
             seg.gnatbar_ichan2 = gna  		# original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.oriT1.cm=1.4
         
         self.oriT2.insert("ichan2")
         for seg in self.oriT2:
             seg.gnatbar_ichan2 = gna  		# original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.oriT2.cm=1.4
 
         
         self.oriM1.insert("ichan2")
@@ -1951,39 +1950,31 @@ class BistratifiedCell(modelcell):
             seg.gnatbar_ichan2 = gna  		# original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.oriM1.cm=1.4
         
         self.oriM2.insert("ichan2")
         for seg in self.oriM2:
             seg.gnatbar_ichan2 = gna  		# original 0.015
             seg.gkfbar_ichan2 = 0.013  		
             seg.gl_ichan2 = 0.00018
-            cm=1.4
+        self.oriM2.cm=1.4
         
         self.orit1.insert("ichan2")
         for seg in self.orit1:
             seg.gnatbar_ichan2 = gna  		# Sodium conductance (original 0.015)
             seg.gkfbar_ichan2 = 0.013  		# Delayed K+ rectifier (fast)
             seg.gl_ichan2 = 0.00018         # Leak conductance
-            cm=1.4
+        self.orit1.cm=1.4
         
         self.orit2.insert("ichan2")
         for seg in self.orit2:
             seg.gnatbar_ichan2 = gna  		# Sodium conductance (original 0.015)
             seg.gkfbar_ichan2 = 0.013  		# Delayed K+ rectifier (fast)
             seg.gl_ichan2 = 0.00018         # Leak conductance
-            cm=1.4
+        self.orit2.cm=1.4
         
         for sec in self.all:
             # self.cm = Not setting cm
-            self.Ra = 100			# 31.3 +/- 10.9
-            self.enat = 55
-            self.ekf = -90
-            self.ek = -90
-            self.elca = 130
-            self.esk = -90
-            self.el_ichan2 = -60			#-60.06
-            self.cao_ccanl = 2
             
             sec.insert("ccanl")
             for seg in sec:
@@ -2012,9 +2003,14 @@ class BistratifiedCell(modelcell):
             for seg in sec:
                 seg.gkbar_mykca = 0.0002			# Ca2+ and Voltage-dependent K+ (BK) conductance
 		 					# make catau slower70e-3 	cao=2 cai=50.e-6
-
-
-
+            sec.Ra = 100			# 31.3 +/- 10.9
+            sec.enat = 55
+            sec.ekf = -90
+            sec.ek = -90
+            sec.elca = 130
+            sec.esk = -90
+            sec.el_ichan2 = -60			#-60.06
+        self.cao_ccanl = 2
 
 
     def connect2target(self,target, delay = 1, weight=0.04): # { localobj nc #$o1 target point process, optional $o2 returned NetCon

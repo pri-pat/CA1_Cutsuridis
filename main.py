@@ -23,40 +23,38 @@ import sys
 import importlib
 import netfcns
 from model import cellClasses
+
+h.load_file("stdrun.hoc")
+h.load_file("nrngui.hoc") # load_file
+
 #%%
 
 #################
 # PARAMETERS
 #################
-usepar = 0
+usepar = 1
 netfcns.usepar = usepar
 
 # Set default values for parameters that can be passed in at the command line
-plotflag = 1
-batchflag = 1
+plotflag = 0
+network_scale = 1 # set to 1 for full scale or 0.2 for a quick test with a small network
+scaleEScon = 1
 
-network_scale = .2 # set to 1 for full scale or 0.2 for a quick test with a small network
-scaleEScon = .5
-
-numCycles = 0# 8
-simname="test"
+numCycles = 8
+simname="par"
 connect_random_low_start_ = 1  # low seed for mcell_ran4_init()
 
 # Check for parameters being passed in via the command line
 if len(sys.argv)>1:
     simname = sys.argv[1]
     if len(sys.argv)>2:
-        batchflag = int(sys.argv[2])
+        numCycles = int(sys.argv[2])
         if len(sys.argv)>3:
-            plotflag = int(sys.argv[3])
+            network_scale = int(sys.argv[3])
             if len(sys.argv)>4:
-                network_scale = float(sys.argv[4])
+                scaleEScon = float(sys.argv[4])
                 if len(sys.argv)>5:
-                    scaleEScon = float(sys.argv[5])
-                    if len(sys.argv)>6:
-                        numCycles = float(sys.argv[6])
-                        if len(sys.argv)>7:
-                            connect_random_low_start_ = float(sys.argv[7])
+                    connect_random_low_start_ = float(sys.argv[5])
                         
                         
 
@@ -71,7 +69,7 @@ SPATT = calcSPATT(network_scale)
 
 SIMDUR = STARTDEL + (THETA*numCycles)    # simulation duration (msecs)
 
-h.tstop = SIMDUR
+h.tstop = 500 #SIMDUR
 h.celsius = 34
 #%%
 
@@ -101,14 +99,22 @@ poplist.append(CellPop(num=100*network_scale, order=5, popname="CA3Cell", classt
 poplist.append(CellPop(num=20*network_scale, order=6, popname="ECCell", classtype="StimCell", isart=1))
 poplist.append(CellPop(num=10*network_scale, order=7, popname="SEPCell", classtype="BurstCell", isart=1))
 
+ncell = 0
+for p in poplist:
+    ncell += p.num
 # creates the cells and appends them to a List called cells
 cells = []
 ranlist = []
 nclist = []
 h('{load_file("ranstream.hoc")}')  # to give each cell its own sequence generator
+h('{load_file("netparmpi.hoc")}')  # to give each cell its own sequence generator
 
 pc = h.ParallelContext() # Even if running serially, we can create and use this
                          # in serial, pc.nhost == 1
+pnm = h.ParallelNetManager(ncell)	# Set up a parallel net manager for all the cells
+pc = pnm.pc # Even if running serially, we can create and use this
+                         # in serial, pc.nhost == 1
+pnm.round_robin()					#Incorporate all processors - cells 0 through ncell-1
 
 # Set GID ranges of cells and Load Cell Class definitions
 pop_by_name={}
@@ -129,21 +135,22 @@ for pop in poplist:
     coretype_i = 0
 
 #    for j in range(int(pop.num)):    # in serial, make all cells on one core
-    for j in range(int(pcst-pop.gidst),int(pop.num),int(pc.nhost())):    # in parallel, make every nth cell on one core                             
-        print("newcell = cellClasses."+pop.classtype+ "(int("+str(pop.gidst+j)+"))")
-        exec("newcell = cellClasses."+pop.classtype+ "(int("+str(pop.gidst+j)+"))")
-        newcell.core_i = core_i
-        newcell.coretype_i = coretype_i
-        cells.append(newcell)
-        ranlist.append(h.RandomStream(i))  # ranlist.o(i) corresponds to
-        i+=1
-        pcst +=pc.nhost()
-        core_i += 1
-        coretype_i += 1
-        pc.set_gid2node(newcell.gid, pc.id())  # associate cell's gid with this host
-        nc = newcell.connect2target(None)  # attach spike detector to cell
-        pc.cell(newcell.gid, nc)  # associate cell's gid with its spike detector
-    
+    for j in range(int(pop.gidst),int(pop.gidend)+1):    # in parallel, make every nth cell on one core                             
+        if (pc.gid_exists(j)):
+            #print("newcell = cellClasses."+pop.classtype+ "(int("+str(pop.gidst+j)+"))")
+            exec("newcell = cellClasses."+pop.classtype+ "(int("+str(j)+"))")
+            newcell.core_i = core_i
+            newcell.coretype_i = coretype_i
+            cells.append(newcell)
+            ranlist.append(h.RandomStream(i))  # ranlist.o(i) corresponds to
+            i+=1
+            pcst +=pc.nhost()
+            core_i += 1
+            coretype_i += 1
+            #pc.set_gid2node(newcell.gid, pc.id())  # associate cell's gid with this host
+            nc = newcell.connect2target(None)  # attach spike detector to cell
+            pc.cell(newcell.gid, nc)  # associate cell's gid with its spike detector
+        
     pop.core_en = core_i-1
 
 
@@ -207,6 +214,7 @@ class popConn:
         self.delay=delay
         self.synst=synst
         self.synend=synend
+        self.connsMade=0
         
     def __repr__(self):
         return "Connection {} {} ---> {} of type {} with weight {}".format(int(self.prenum), self.prepop, self.popname, self.type, self.weight)
@@ -236,12 +244,12 @@ EO_PC = 0    # CA1 PC AMPA excit (2 of)
 IO_IN = 2    # inhib from INs and septum (2 of: 1 GABAA, 1 GABAB)
 
 connlist=[]                    # Postsynaptic type      Presynaptic type  number of connections (at least 1)
-connlist.append(popConn(popname="PyramidalCell", prepop="CA3Cell", prenum=max([pop_by_name["CA3Cell"].num * scaleEScon, 1]), type="AMPA", weight=CLWGT, delay=CDEL, synst=E_CA3, synend=E_CA3+EN_CA3)) # CA3_PC. Use EM_CA3 for modifiable synapses
+# connlist.append(popConn(popname="PyramidalCell", prepop="CA3Cell", prenum=max([pop_by_name["CA3Cell"].num * scaleEScon, 1]), type="AMPA", weight=CLWGT, delay=CDEL, synst=E_CA3, synend=E_CA3+EN_CA3)) # CA3_PC. Use EM_CA3 for modifiable synapses
 connlist.append(popConn(popname="BasketCell",    prepop="CA3Cell", prenum=max([pop_by_name["CA3Cell"].num * scaleEScon, 1]), type="AMPA", weight=EIWGT, delay=EIDEL, synst=EI_CA3, synend=EI_CA3+3)) # 
 connlist.append(popConn(popname="AACell",        prepop="CA3Cell", prenum=max([pop_by_name["CA3Cell"].num * scaleEScon, 1]), type="AMPA", weight=EIWGT, delay=EIDEL, synst=EI_CA3, synend=EI_CA3+3)) # CA3_AAC
 connlist.append(popConn(popname="BistratifiedCell", prepop="CA3Cell", prenum=max([pop_by_name["CA3Cell"].num * scaleEScon, 1]), type="AMPA", weight=EIWGT, delay=EIDEL, synst=EI_CA3, synend=EI_CA3+3)) # CA3_BSC
 
-connlist.append(popConn(popname="PyramidalCell", prepop="ECCell", prenum=max([pop_by_name["ECCell"].num * scaleEScon, 1]), type="AMPA", weight=ECWGT, delay=EIDEL, synst=E_EC, synend=E_EC+2)) # EC_PC
+# connlist.append(popConn(popname="PyramidalCell", prepop="ECCell", prenum=max([pop_by_name["ECCell"].num * scaleEScon, 1]), type="AMPA", weight=ECWGT, delay=EIDEL, synst=E_EC, synend=E_EC+2)) # EC_PC
 connlist.append(popConn(popname="BasketCell",    prepop="ECCell", prenum=max([pop_by_name["ECCell"].num * scaleEScon, 1]), type="AMPA", weight=EIWGT, delay=EIDEL, synst=EI_EC, synend=EI_EC+1)) # EC_BC
 connlist.append(popConn(popname="AACell",        prepop="ECCell", prenum=max([pop_by_name["ECCell"].num * scaleEScon, 1]), type="AMPA", weight=EIWGT, delay=EIDEL, synst=EI_EC, synend=EI_EC+1)) # EC_AAC
 
@@ -283,7 +291,8 @@ nclist = []
 # # Make connections with data from above
 for conn in connlist: 
     print(conn)
-    netfcns.connectcells(cells,ranlist, nclist, pop_by_name, conn.popname, conn.prepop, synstart=conn.synst, synend=conn.synend, npresyn=conn.prenum, weight=conn.weight, delay= conn.delay, pc = pc)
+    conn.connsMade = netfcns.connectcells(cells,ranlist, nclist, pop_by_name, conn.popname, conn.prepop, synstart=conn.synst, synend=conn.synend, npresyn=conn.prenum, weight=conn.weight, delay= conn.delay, pc = pc)
+    print("newtar starts with ", pop_by_name[conn.popname].gidst, " and pre starts with ", pop_by_name[conn.prepop].gidst , " and conns made = ", conn.connsMade)
 
 #netfcns.mkinputs(cells, pop_by_name['CA3Cell'].gidst, pop_by_name['ECCell'].gidst, pop_by_name['SEPCell'].gidst, ntot, pop_by_name)
 # EC input to PCs
@@ -324,6 +333,7 @@ def prun():
     pc.barrier()  # wait for all hosts to get to this point
     pc.set_maxstep(1);
     h.stdinit()
+    print("going to run till",h.tstop)
     pc.psolve(h.tstop);
     netfcns.spikeout(cells,fstem,pc)
     netfcns.vout(cells,results,fstem,pc)
@@ -356,7 +366,6 @@ h.xopen("midbalfcn.hoc")
 h('objref fihw')
 h('fihw = new FInitializeHandler(2, "midbal()")')
 
-
 # run the simulation
 # if (batchflag==1):
 print("Now running simulation at scale = ", network_scale, " for time = ", SIMDUR, " with scaleEScon = ", scaleEScon)
@@ -364,6 +373,7 @@ print("Now running simulation at scale = ", network_scale, " for time = ", SIMDU
 if usepar==1:
     prun() # run and print results
 else:
+    print("Running serial regular run with tstop=",h.tstop)
     h.run()    
     # print out the results
     netfcns.spikeout(cells,fstem,pc)
@@ -385,13 +395,9 @@ if (plotflag==1):
     netfcns.vplot(cells,results)
 
 print( "** Finished plotting **")
-# else:
-# 	# panel for simulation results
-# 	h.xopen("HAM_SR.ses")
-# 	xspikeres()
 
-
-
-
-# At end
-#spikeout(cells,fstem)
+if usepar==1:
+    pc.runworker()
+    pc.done()
+    h.quit()
+    quit()

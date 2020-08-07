@@ -15,10 +15,9 @@ cuelist = []
 
 def connectcells(cells, ranlist, nclist, pop_by_name, post_type, pre_type, synstart, synend,npresyn,weight,delay, pc): # {local i, j, gid, nsyn, r  localobj syn, nc, rs, u
     # initialize the pseudorandom number generator
-    
-    for i in range(pop_by_name[post_type].core_st,pop_by_name[post_type].core_en):
+    ctcons=0
+    for i in range(pop_by_name[post_type].core_st,pop_by_name[post_type].core_en+1):
         cell = cells[i]
-        gid = cell.gid
         rs = ranlist[i]  # RandomStream for cells.object(i)
         rs.start()
         rs.r.discunif(int(pop_by_name[pre_type].gidst),int(pop_by_name[pre_type].gidend))  # pick a random presynaptic cell by gid of presynaptic cell type return source cell index
@@ -45,6 +44,9 @@ def connectcells(cells, ranlist, nclist, pop_by_name, post_type, pre_type, synst
                 
                 u[r-int(pop_by_name[pre_type].gidst)] = 1
                 nsyn += 1
+                ctcons +=1
+                
+    return ctcons
 
 
 # connects the EC input layer to PC cells
