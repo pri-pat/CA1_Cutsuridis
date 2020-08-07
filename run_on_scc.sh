@@ -11,7 +11,7 @@
 #$ -N ca1mem_sim1
 
 #$ -j y
-#$ -o log_$JOBNAME.qlog
+#$ -o log_ca1mem_sim1.qlog
 
 echo "============================================"
 echo "Start date : $(date)"
@@ -24,4 +24,4 @@ module load python3/3.6.5
 module load openmpi
 module load neuron/7.6.7
 
-mpirun -np 8 ./mod/x86_64/special -mpi -c "sim1" -c 8 main.py
+mpirun -np 8 ./x86_64/special -mpi -c "sim1" -c 8 main.py
