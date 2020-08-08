@@ -34,9 +34,10 @@ h.load_file("nrngui.hoc") # load_file
 #################
 usepar = 1
 netfcns.usepar = usepar
+printflag = 1 # 0: almost silent, 1: some prints, 2: many prints
 
 # Set default values for parameters that can be passed in at the command line
-plotflag = 0
+plotflag = 1
 network_scale = 1 # set to 1 for full scale or 0.2 for a quick test with a small network
 scaleEScon = 1
 
@@ -45,21 +46,32 @@ simname="par"
 connect_random_low_start_ = 1  # low seed for mcell_ran4_init()
 
 # Check for parameters being passed in via the command line
-if len(sys.argv)>1:
-    simname = sys.argv[1]
-    if len(sys.argv)>2:
-        numCycles = int(sys.argv[2])
-        if len(sys.argv)>3:
-            network_scale = int(sys.argv[3])
-            if len(sys.argv)>4:
-                scaleEScon = float(sys.argv[4])
-                if len(sys.argv)>5:
-                    connect_random_low_start_ = float(sys.argv[5])
+argadd = 1
+startlen = 1
+import subprocess
+result = subprocess.run('hostname', stdout = subprocess.PIPE)
+if (result.stdout.decode('utf-8')[:3] == "scc"): # scc has an odd way of accounting for command line arguments
+    argadd = 2
+    startlen = 5
+    
+if len(sys.argv)>(startlen):
+    simname = sys.argv[startlen]
+    if len(sys.argv)>(argadd+startlen):
+        numCycles = int(sys.argv[argadd+startlen])
+        if len(sys.argv)>(2*argadd+startlen):
+            network_scale = int(sys.argv[2*argadd+startlen])
+            if len(sys.argv)>(3*argadd+startlen):
+                scaleEScon = float(sys.argv[3*argadd+startlen])
+                if len(sys.argv)>(4*argadd+startlen):
+                    connect_random_low_start_ = float(sys.argv[4*argadd+startlen])
                         
                         
+rmchars=['"',"'","\\"," "]
+
+for i in rmchars:
+    simname = simname.replace(i,"")
 
 fstem = "pyresults/" + simname
-print("simname = ", simname, ", fstem = ", fstem)
 
 # Set Timing Parameters
 from model_const import *
@@ -69,15 +81,19 @@ SPATT = calcSPATT(network_scale)
 
 SIMDUR = STARTDEL + (THETA*numCycles)    # simulation duration (msecs)
 
-h.tstop = 500 #SIMDUR
+h.tstop = SIMDUR
 h.celsius = 34
+
+if (printflag>0):
+    print("simname = {} will run for {} ms, results will be in {}/*.dat".format(simname, SIMDUR, fstem))
+
 #%%
 
 #################
 # CREATE CELLS
 #################
 
-class CellPop:
+class CellPop():
     def __init__(self, num=0, gidst=0, gidend=0, order=0, popname="", classtype="", isart=0):
         self.num=num
         self.gidst=gidst
@@ -137,7 +153,8 @@ for pop in poplist:
 #    for j in range(int(pop.num)):    # in serial, make all cells on one core
     for j in range(int(pop.gidst),int(pop.gidend)+1):    # in parallel, make every nth cell on one core                             
         if (pc.gid_exists(j)):
-            #print("newcell = cellClasses."+pop.classtype+ "(int("+str(pop.gidst+j)+"))")
+            if (printflag>1):
+                print("newcell = cellClasses."+pop.classtype+ "(int("+str(j)+"))")
             exec("newcell = cellClasses."+pop.classtype+ "(int("+str(j)+"))")
             newcell.core_i = core_i
             newcell.coretype_i = coretype_i
@@ -190,11 +207,11 @@ CFRAC = 1    # fraction of active cells in cue
 # (cue and EC patterns taken from FSTORE file to implement storage)
 # (use same file for FPATT and FSTORE to test recall only)
 if network_scale==1:
-    FCONN = "weights/wgtsN100S20P5.dat" #"Weights/wgtsN100S20P5.dat"
+    FCONN = "Weights/wgtsN100S20P5.dat" #"Weights/wgtsN100S20P5.dat"
     FPATT = "Weights/pattsN100S20P5.dat"    # "Weights/pattsN100S20P5.dat"    # already stored patterns
     FSTORE = "Weights/pattsN100S20P5.dat"    # "Weights/pattsN100S20P5.dat"    # new patterns to store
 else:
-    FCONN = "weights/wgtsN100S20P5scaled.dat" #"Weights/wgtsN100S20P5.dat"
+    FCONN = "Weights/wgtsN100S20P5scaled.dat" #"Weights/wgtsN100S20P5.dat"
     FPATT = "Weights/pattsN100S20P5scaled.dat"    # "Weights/pattsN100S20P5.dat"    # already stored patterns
     FSTORE = "Weights/pattsN100S20P5scaled.dat"    # "Weights/pattsN100S20P5.dat"    # new patterns to store
 #%%
@@ -290,9 +307,9 @@ nclist = []
 
 # # Make connections with data from above
 for conn in connlist: 
-    print(conn)
     conn.connsMade = netfcns.connectcells(cells,ranlist, nclist, pop_by_name, conn.popname, conn.prepop, synstart=conn.synst, synend=conn.synend, npresyn=conn.prenum, weight=conn.weight, delay= conn.delay, pc = pc)
-    print("newtar starts with ", pop_by_name[conn.popname].gidst, " and pre starts with ", pop_by_name[conn.prepop].gidst , " and conns made = ", conn.connsMade)
+    if (printflag>1):
+        print("newtar starts with ", pop_by_name[conn.popname].gidst, " and pre starts with ", pop_by_name[conn.prepop].gidst , " and conns made = ", conn.connsMade)
 
 #netfcns.mkinputs(cells, pop_by_name['CA3Cell'].gidst, pop_by_name['ECCell'].gidst, pop_by_name['SEPCell'].gidst, ntot, pop_by_name)
 # EC input to PCs
@@ -333,7 +350,8 @@ def prun():
     pc.barrier()  # wait for all hosts to get to this point
     pc.set_maxstep(1);
     h.stdinit()
-    print("going to run till",h.tstop)
+    if (printflag>1):
+        print("Parallel run is going to run till",h.tstop)
     pc.psolve(h.tstop);
     netfcns.spikeout(cells,fstem,pc)
     netfcns.vout(cells,results,fstem,pc)
@@ -344,9 +362,10 @@ def prun():
 def bpattrun():
     netfcns.erasecue(pop_by_name,pc)
     for i in range(0, NPATT):
-        if (pc.id()==0):
+        if (pc.id()==0 and printflag>1):
             print("Cue pattern ", i) # print header once
-        h.sprint(fstem, "Results/HAM_P5R%", i)
+        cuefstem = "{}_{}".format(fstem, i)
+        #h.sprint(fstem, "Results/HAM_P5R%", i)
         netfcns.mkcue(FPATT, i, CFRAC, NPATT, pc);	# cue from stored pattern
         pc.barrier()  # wait for all hosts to get to this point
         #{pc.set_maxstep(10)}
@@ -368,18 +387,21 @@ h('fihw = new FInitializeHandler(2, "midbal()")')
 
 # run the simulation
 # if (batchflag==1):
-print("Now running simulation at scale = ", network_scale, " for time = ", SIMDUR, " with scaleEScon = ", scaleEScon)
+if (printflag>0):
+    print("Now running simulation at scale = ", network_scale, " for time = ", SIMDUR, " with scaleEScon = ", scaleEScon)
 
 if usepar==1:
     prun() # run and print results
 else:
-    print("Running serial regular run with tstop=",h.tstop)
+    if (printflag>0):
+        print("Running serial regular run with tstop=",h.tstop)
     h.run()    
     # print out the results
     netfcns.spikeout(cells,fstem,pc)
     netfcns.vout(cells,results,fstem,pc)
 
-print( "** Finished running sim and printing results **")
+if (printflag>0):
+    print( "** Finished running sim and printing results **")
 
 
 
@@ -393,11 +415,11 @@ print( "** Finished running sim and printing results **")
 if (plotflag==1):
     netfcns.spikeplot(cells,h.tstop,ntot)
     netfcns.vplot(cells,results)
-
-print( "** Finished plotting **")
+    print( "** Finished plotting **")
 
 if usepar==1:
+    pc.gid_clear()
     pc.runworker()
     pc.done()
-    h.quit()
-    quit()
+    # h.quit()
+    # quit()
