@@ -11,6 +11,7 @@ from model_const import *
 import matplotlib.pyplot as plt
 
 usepar = 0
+printflag = 1
 cuelist = []
 
 def connectcells(cells, ranlist, nclist, pop_by_name, post_type, pre_type, synstart, synend,npresyn,weight,delay, pc): # {local i, j, gid, nsyn, r  localobj syn, nc, rs, u
@@ -59,7 +60,7 @@ def connectEC(FPATT, ECPATT, NPATT, synstart, numsyn, cells, pop_by_name, pc):# 
     
     # read pattern file (ECPATT=num rows, NPATT = num columns)
     cue = np.loadtxt(fname = FPATT)
-    if (cue.shape != (ECPATT, NPATT)):
+    if (cue.shape != (ECPATT, NPATT) and printflag>1):
         print("The cue data is a different shape than expected:", cue.shape)
 
     # find active cells in pattern
@@ -201,7 +202,8 @@ def mkinputs(cells, ranlist, pop_by_name, pc): #{local i localobj stim, rs
 def mkEC(cells, ranlist, pop_by_name, pc): # {local i, necs localobj cstim, rs
     EClist = []
     necs = 0
-    print("Make EC input...")
+    if (printflag >0):
+        print("Make EC input...")
     for i in range(pop_by_name["ECCell"].core_st,pop_by_name["ECCell"].core_en+1):
         cell = cells[i]
         gid = cell.gid    # id of cell
@@ -222,7 +224,8 @@ def mkEC(cells, ranlist, pop_by_name, pc): # {local i, necs localobj cstim, rs
 
 # setup activity pattern in input cue stims
 def mkcue(FPATT, CPATT, CFRAC, NPATT, SPATT, cells, ranlist, pop_by_name, pc):
-    print( "Make cue (CA3) input...")
+    if (printflag >0):
+        print( "Make cue (CA3) input...")
     # open patterns file
     cue = np.loadtxt(fname = FPATT) # read pattern
 
@@ -232,7 +235,8 @@ def mkcue(FPATT, CPATT, CFRAC, NPATT, SPATT, cells, ranlist, pop_by_name, pc):
         if (pc.gid_exists(i+pop_by_name["CA3Cell"].gidst)):
             if (ncue <= SPATT*CFRAC):     # fraction of active cells in cue
                 if (cue[i,0] == 1): #TODO find the correct column
-                    print("Cue cell ", i)
+                    if (printflag >1):
+                        print("Cue cell ", i)
                     cstim = pc.gid2cell(i+pop_by_name["CA3Cell"].gidst)
                     rs = ranlist[cells[i+pop_by_name["CA3Cell"].gidst].core_i]
                     # create cue stimulus
@@ -248,6 +252,7 @@ def mkcue(FPATT, CPATT, CFRAC, NPATT, SPATT, cells, ranlist, pop_by_name, pc):
                     cuelist.append(i)
                     ncue += 1
                     
+                if (printflag >1):  
                     print("  cue size ", ncue)
 
 # remove activity pattern in input cue stims
@@ -261,7 +266,8 @@ def erasecue(pop_by_name,pc): # {local i, j localobj cstim
 # tvec, idvec will be Vectors that record all spike times (tvec)
 # and the corresponding id numbers of the cells that spiked (idvec)
 def spikerecord(cells):
-    print( "Record spikes...")
+    if (printflag >1):
+        print( "Record spikes...")
     for cell in cells:
         if (cell.is_art==0):
             cell._spike_detector = h.NetCon(cell.soma(0.5)._ref_v, None, sec=cell.soma)
@@ -277,7 +283,8 @@ def spikerecord(cells):
 # Vectors that record voltages from INs
 
 def vrecord(cells,pop_by_name, iPPC, iNPPC):    
-    print( "Record example voltage traces...")
+    if (printflag >1):
+        print( "Record example voltage traces...")
     results = {}
     for cell in cells:	# loop over possible target cells
         gid = cell.gid	# id of cell
@@ -293,19 +300,19 @@ def vrecord(cells,pop_by_name, iPPC, iNPPC):
 
         if (gid==pop_by_name['BasketCell'].gidst):
             results["vBC"] = h.Vector().record(cell.soma(0.5)._ref_v)
-            print("Recording results into vBC from ", cell)
+            #print("Recording results into vBC from ", cell)
 
         if (gid==pop_by_name['AACell'].gidst):
             results["vAAC"] = h.Vector().record(cell.soma(0.5)._ref_v)
-            print("Recording results into vAAC from ", cell)
+            #print("Recording results into vAAC from ", cell)
 
         if (gid==pop_by_name['BistratifiedCell'].gidst):
             results["vBSC"] = h.Vector().record(cell.soma(0.5)._ref_v)
-            print("Recording results into vBSC from ", cell)
+            #print("Recording results into vBSC from ", cell)
 
         if (gid==pop_by_name['OLMCell'].gidst):
             results["vOLM"] = h.Vector().record(cell.soma(0.5)._ref_v)
-            print("Recording results into vOLM from ", cell)
+            #print("Recording results into vOLM from ", cell)
 
     return results
 
