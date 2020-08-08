@@ -102,7 +102,7 @@ def connectCA3(FCONN, C_P, EM_CA3, EN_CA3, cells, pop_by_name, connect_random_lo
     random.seed(connect_random_low_start_)
     #ncilist = new List()
     # inputs to PCs determined by weight matrix
-    for i in range(pop_by_name['PyramidalCell'].core_st,pop_by_name['PyramidalCell'].core_en+1):    # loop over possible target cells
+    for i in range(pop_by_name['PyramidalCell'].gidst,pop_by_name['PyramidalCell'].gidend+1):    # loop over possible target cells
         if (pc.gid_exists(i)):
             cell = pc.gid2cell(i)
             gid = cell.gid    # id of cell
@@ -167,7 +167,7 @@ def connectCA3(FCONN, C_P, EM_CA3, EN_CA3, cells, pop_by_name, connect_random_lo
 def mkinputs(cells, ranlist, pop_by_name, pc): #{local i localobj stim, rs 
     # Configures the stimulation:
     
-    for i in range(pop_by_name["CA3Cell"].core_st,pop_by_name["CA3Cell"].core_en+1):
+    for i in range(pop_by_name["CA3Cell"].gidst,pop_by_name["CA3Cell"].gidend+1):
         if (pc.gid_exists(i)):
             cstim = pc.gid2cell(i)        
             cstim.number = ENUM
@@ -175,7 +175,7 @@ def mkinputs(cells, ranlist, pop_by_name, pc): #{local i localobj stim, rs
             cstim.interval = EINT
             cstim.noise = ENOISE
     
-    for i in range(pop_by_name["ECCell"].core_st,pop_by_name["ECCell"].core_en+1):
+    for i in range(pop_by_name["ECCell"].gidst,pop_by_name["ECCell"].gidend+1):
         if (pc.gid_exists(i)):
             cstim = pc.gid2cell(i)
             cstim.number = ENUM
@@ -183,7 +183,7 @@ def mkinputs(cells, ranlist, pop_by_name, pc): #{local i localobj stim, rs
             cstim.interval = EINT
             cstim.noise = ENOISE
     
-    for i in range(pop_by_name["SEPCell"].core_st,pop_by_name["SEPCell"].core_en+1):
+    for i in range(pop_by_name["SEPCell"].gidst,pop_by_name["SEPCell"].gidend+1):
         if (pc.gid_exists(i)):
             cstim = pc.gid2cell(i)
             cstim.number = SEPNUM
@@ -210,7 +210,7 @@ def mkEC(cells, ranlist, pop_by_name, pc): # {local i, necs localobj cstim, rs
     necs = 0
     if (printflag >0):
         print("Make EC input...")
-    for i in range(pop_by_name["ECCell"].core_st,pop_by_name["ECCell"].core_en+1):
+    for i in range(pop_by_name["ECCell"].gidst,pop_by_name["ECCell"].gidend+1):
         if (pc.gid_exists(i)):
             cstim = pc.gid2cell(i)
             rs = ranlist[int(cstim.core_i)]
