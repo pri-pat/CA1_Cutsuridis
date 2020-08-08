@@ -10,7 +10,7 @@
 NEURON	{ 
   ARTIFICIAL_CELL RegnStim
   RANGE interval, number, start
-  RANGE noise
+  RANGE noise, gid, core_i, coretype_i
   POINTER donotuse
 }
 
@@ -19,6 +19,9 @@ PARAMETER {
 	number	= 10 <0,1e9>	: number of spikes (independent of noise)
 	start		= 50 (ms)	: start of first spike
 	noise		= 0 <0,1>	: amount of randomness (0.0 - 1.0)
+	gid = -1  (1)
+	core_i = -1 (1)
+	coretype_i = -1 (1)
 }
 
 ASSIGNED {

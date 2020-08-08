@@ -37,7 +37,7 @@ netfcns.usepar = usepar
 printflag = 1 # 0: almost silent, 1: some prints, 2: many prints
 
 # Set default values for parameters that can be passed in at the command line
-plotflag = 1
+plotflag = 0
 network_scale = 1 # set to 1 for full scale or 0.2 for a quick test with a small network
 scaleEScon = 1
 
@@ -156,8 +156,12 @@ for pop in poplist:
             if (printflag>1):
                 print("newcell = cellClasses."+pop.classtype+ "(int("+str(j)+"))")
             exec("newcell = cellClasses."+pop.classtype+ "(int("+str(j)+"))")
-            newcell.core_i = core_i
-            newcell.coretype_i = coretype_i
+            if (pop.isart==1):
+                newcell.stim.gid = int(j)
+                newcell.stim.core_i = int(core_i)
+                newcell.stim.coretype_i = int(coretype_i)
+            newcell.core_i = int(core_i)
+            newcell.coretype_i = int(coretype_i)
             cells.append(newcell)
             ranlist.append(h.RandomStream(i))  # ranlist.o(i) corresponds to
             i+=1
