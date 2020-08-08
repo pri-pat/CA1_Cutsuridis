@@ -56,7 +56,6 @@ def connectcells(cells, ranlist, nclist, pop_by_name, post_type, pre_type, synst
 # appends the PC NetCons to a List called ncslist
 def connectEC(FPATT, ECPATT, NPATT, synstart, numsyn, cells, pop_by_name, pc):# {local i, gid, ncue  localobj cue, cstim, syn, src, nc, fp, target
     ncelist = []
-    gids = [cell.gid for cell in cells]
     
     # read pattern file (ECPATT=num rows, NPATT = num columns)
     cue = np.loadtxt(fname = FPATT)
@@ -104,95 +103,102 @@ def connectCA3(FCONN, C_P, EM_CA3, EN_CA3, cells, pop_by_name, connect_random_lo
     #ncilist = new List()
     # inputs to PCs determined by weight matrix
     for i in range(pop_by_name['PyramidalCell'].core_st,pop_by_name['PyramidalCell'].core_en+1):    # loop over possible target cells
-        cell = cells[i]
-        gid = cell.gid    # id of cell
-        syn = cell.pre_list[EM_CA3]    # AMPA synapse with STDP
-        syn.wmax = CHWGT
-        syn.wmin = CLWGT
-        syn.d = STDPDFAC    # depression
-        syn.p = STDPPFAC    # potentiation
-        syn.gscale = AMPASUPP    # fraction of AMPA during storage
-        syn.thresh = STDPTHRESH    # threshold for postsynaptic voltage detection
-        syn.gbdel = STDPSTART
-        syn.gbint = STDPINT
-        syn.gblen = STDPLEN
-        synN = cell.pre_list[EN_CA3]    # NMDA synapse
-        #rs = ranlist[i]  # the corresponding RandomStream
-        #rs.start()
-        #rs.r.uniform(0, 1)  # return integer in range 0..1
-        #rc.setrand(rs.r)    # generate random connectivity
-        
-        # open connections file
-        # read incoming weights for cell gid
-        conns = np.loadtxt(fname = FCONN)
-
-        for j in range(int(pop_by_name["CA3Cell"].num)):
-            #for j=0, CA3_PC-1 { # You might need something like this line instead so that it doesn't error out if you are only planning to make a scaled down number of synapses
-            # only connection if physical connection exists
-            #if (rc[j] <= cp):
-            if (random.uniform(0,1) <= cp):
-                #print "   src ", j
-
-                if usepar==1:
-                    nc = pc.gid_connect(int(j+pop_by_name["CA3Cell"].gidst), synN)
-                    nc2 = pc.gid_connect(int(j+pop_by_name["CA3Cell"].gidst), syn)
-
-                else:
-                    src = cells[int(j+pop_by_name["CA3Cell"].gidst)].stim
-                    nc = h.NetCon(src, synN)
-                    nc2 = h.NetCon(src, syn)
-
-
-                # set up connection from source to target NMDA synapse
-                #        nc = pc.gid_connect(j+iCA3, synN)
-                ncslist.append(nc)
-                nc.delay = CDEL
-                nc.weight[0] = CNWGT    # NMDA weight same for all connections
-                # high AMPA if weight is 1
-                
-                ncslist.append(nc2)
-                nc2.delay = CDEL
-
-                if (conns[j,0] == 1): # TODO access the correct column
-                    # set up connection from source to target
-                    #nc = pc.gid_connect(j+iCA3, syn)
-                    nc2.weight[0] = CHWGT
-                else:
-                    # set up connection from source to target
-                    #nc = pc.gid_connect(j+iCA3, syn)
-                    nc2.weight[0] = CLWGT    # unlearned weight
-
+        if (pc.gid_exists(i)):
+            cell = pc.gid2cell(i)
+            gid = cell.gid    # id of cell
+            syn = cell.pre_list[EM_CA3]    # AMPA synapse with STDP
+            syn.wmax = CHWGT
+            syn.wmin = CLWGT
+            syn.d = STDPDFAC    # depression
+            syn.p = STDPPFAC    # potentiation
+            syn.gscale = AMPASUPP    # fraction of AMPA during storage
+            syn.thresh = STDPTHRESH    # threshold for postsynaptic voltage detection
+            syn.gbdel = STDPSTART
+            syn.gbint = STDPINT
+            syn.gblen = STDPLEN
+            synN = cell.pre_list[EN_CA3]    # NMDA synapse
+            #rs = ranlist[i]  # the corresponding RandomStream
+            #rs.start()
+            #rs.r.uniform(0, 1)  # return integer in range 0..1
+            #rc.setrand(rs.r)    # generate random connectivity
+            
+            # open connections file
+            # read incoming weights for cell gid
+            conns = np.loadtxt(fname = FCONN)
+    
+            for j in range(int(pop_by_name["CA3Cell"].num)):
+                #for j=0, CA3_PC-1 { # You might need something like this line instead so that it doesn't error out if you are only planning to make a scaled down number of synapses
+                # only connection if physical connection exists
+                #if (rc[j] <= cp):
+                if (random.uniform(0,1) <= cp):
+                    #print "   src ", j
+    
+                    if usepar==1:
+                        nc = pc.gid_connect(int(j+pop_by_name["CA3Cell"].gidst), synN)
+                        nc2 = pc.gid_connect(int(j+pop_by_name["CA3Cell"].gidst), syn)
+    
+                    else:
+                        src = cells[int(j+pop_by_name["CA3Cell"].gidst)].stim
+                        nc = h.NetCon(src, synN)
+                        nc2 = h.NetCon(src, syn)
+    
+    
+                    # set up connection from source to target NMDA synapse
+                    #        nc = pc.gid_connect(j+iCA3, synN)
+                    ncslist.append(nc)
+                    nc.delay = CDEL
+                    nc.weight[0] = CNWGT    # NMDA weight same for all connections
+                    # high AMPA if weight is 1
+                    
+                    ncslist.append(nc2)
+                    nc2.delay = CDEL
+    
+                    if (conns[j,0] == 1): # TODO access the correct column
+                        # set up connection from source to target
+                        #nc = pc.gid_connect(j+iCA3, syn)
+                        nc2.weight[0] = CHWGT
+                    else:
+                        # set up connection from source to target
+                        #nc = pc.gid_connect(j+iCA3, syn)
+                        nc2.weight[0] = CLWGT    # unlearned weight
+    
 
 # sets the CA3, EC and Septal background inputs
 def mkinputs(cells, ranlist, pop_by_name, pc): #{local i localobj stim, rs 
     # Configures the stimulation:
     
     for i in range(pop_by_name["CA3Cell"].core_st,pop_by_name["CA3Cell"].core_en+1):
-        cells[i].stim.number = ENUM
-        cells[i].stim.start = ESTART
-        cells[i].stim.interval = EINT
-        cells[i].stim.noise = ENOISE
+        if (pc.gid_exists(i)):
+            cstim = pc.gid2cell(i)        
+            cstim.number = ENUM
+            cstim.start = ESTART
+            cstim.interval = EINT
+            cstim.noise = ENOISE
     
     for i in range(pop_by_name["ECCell"].core_st,pop_by_name["ECCell"].core_en+1):
-        cells[i].stim.number = ENUM
-        cells[i].stim.start = ESTART
-        cells[i].stim.interval = EINT
-        cells[i].stim.noise = ENOISE
+        if (pc.gid_exists(i)):
+            cstim = pc.gid2cell(i)
+            cstim.number = ENUM
+            cstim.start = ESTART
+            cstim.interval = EINT
+            cstim.noise = ENOISE
     
     for i in range(pop_by_name["SEPCell"].core_st,pop_by_name["SEPCell"].core_en+1):
-        cells[i].stim.number = SEPNUM
-        cells[i].stim.start = SEPSTART
-        cells[i].stim.interval = SEPINT
-        cells[i].stim.noise = SEPNOISE
-        cells[i].stim.burstint = SEPBINT
-        cells[i].stim.burstlen = SEPBLEN
+        if (pc.gid_exists(i)):
+            cstim = pc.gid2cell(i)
+            cstim.number = SEPNUM
+            cstim.start = SEPSTART
+            cstim.interval = SEPINT
+            cstim.noise = SEPNOISE
+            cstim.burstint = SEPBINT
+            cstim.burstlen = SEPBLEN
                
-        rs = ranlist[i]
-        # Use the gid-specific random generator so random streams are
-        # independent of where and how many stims there are.
-        cells[i].stim.noiseFromRandom(rs.r)
-        rs.r.negexp(1)
-        rs.start()
+            rs = ranlist[int(cstim.core_i)]
+            # Use the gid-specific random generator so random streams are
+            # independent of where and how many stims there are.
+            cstim.noiseFromRandom(rs.r)
+            rs.r.negexp(1)
+            rs.start()
             
 #########################
 # Instrumentation, i.e. stimulation and recording
@@ -205,22 +211,20 @@ def mkEC(cells, ranlist, pop_by_name, pc): # {local i, necs localobj cstim, rs
     if (printflag >0):
         print("Make EC input...")
     for i in range(pop_by_name["ECCell"].core_st,pop_by_name["ECCell"].core_en+1):
-        cell = cells[i]
-        gid = cell.gid    # id of cell
-        # create cue stimulus
-        cstim = cell.stim
-        rs = ranlist[i]
-        cstim.number = ECNUM
-        cstim.start = ECSTART
-        cstim.interval = ECINT
-        cstim.noise = ECNOISE
-        # Use the gid-specific random generator so random streams are
-        # independent of where and how many stims there are.
-        cstim.noiseFromRandom(rs.r)
-        rs.r.normal(0, 1)
-        rs.start()
-        EClist.append(i)
-        necs += 1
+        if (pc.gid_exists(i)):
+            cstim = pc.gid2cell(i)
+            rs = ranlist[int(cstim.core_i)]
+            cstim.number = ECNUM
+            cstim.start = ECSTART
+            cstim.interval = ECINT
+            cstim.noise = ECNOISE
+            # Use the gid-specific random generator so random streams are
+            # independent of where and how many stims there are.
+            cstim.noiseFromRandom(rs.r)
+            rs.r.normal(0, 1)
+            rs.start()
+            EClist.append(i)
+            necs += 1
 
 # setup activity pattern in input cue stims
 def mkcue(FPATT, CPATT, CFRAC, NPATT, SPATT, cells, ranlist, pop_by_name, pc):
@@ -238,7 +242,7 @@ def mkcue(FPATT, CPATT, CFRAC, NPATT, SPATT, cells, ranlist, pop_by_name, pc):
                     if (printflag >1):
                         print("Cue cell ", i)
                     cstim = pc.gid2cell(i+pop_by_name["CA3Cell"].gidst)
-                    rs = ranlist[cells[i+pop_by_name["CA3Cell"].gidst].core_i]
+                    rs = ranlist[int(cstim.core_i)]
                     # create cue stimulus
                     cstim.number = CNUM
                     cstim.start = CSTART

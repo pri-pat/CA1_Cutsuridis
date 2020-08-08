@@ -6,7 +6,7 @@
 NEURON	{ 
   ARTIFICIAL_CELL BurstStim2
   RANGE interval, number, start, burstint, burstlen
-  RANGE noise
+  RANGE noise, gid, core_i, coretype_i
   POINTER donotuse
 }
 
@@ -17,6 +17,9 @@ PARAMETER {
 	noise		= 0 <0,1>	: amount of randomness (0.0 - 1.0)
 	burstint = 100 (ms) <1e-9,1e9> : interburst interval (ms)
 	burstlen = 100 (ms) <1e-9,1e9> : burst length (ms)
+	gid = -1  (1)
+	core_i = -1 (1)
+	coretype_i = -1 (1)
 }
 
 ASSIGNED {
