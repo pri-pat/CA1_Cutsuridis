@@ -38,6 +38,8 @@ def connectcells(cells, ranlist, nclist, pop_by_name, post_type, pre_type, synst
                         nc = cells[r].connect2target(syn)
                     else:
                         nc = pc.gid_connect(r, syn)
+                    if (cell.gid==1):
+                        print("pre ",r, " from ", synstart, " to ", synend)
                     
                     nclist.append(nc)
                     nc.delay = delay
@@ -62,11 +64,11 @@ def connectEC(FPATT, ECPATT, NPATT, synstart, numsyn, cells, pop_by_name, pc):# 
     if (cue.shape != (ECPATT, NPATT) and printflag>1):
         print("The cue data is a different shape than expected:", cue.shape)
 
+
     # find active cells in pattern
     for i in range(len(cue)):
         ##if (!pc.gid_exists(i+iPC)) { continue }
         #if (cue[i,0] == 1 ): # TODO added a column index that wouldn't be there usually?
-
         if (cue[i,0] == 1 and pc.gid_exists(i+pop_by_name["PyramidalCell"].gidst)): # Check if owned by this core
             # print "Pattern cell ", i
             # target = pc.gid2cell(i+iPC)
@@ -83,7 +85,6 @@ def connectEC(FPATT, ECPATT, NPATT, synstart, numsyn, cells, pop_by_name, pc):# 
                     else:
                         src = cells[int(j+pop_by_name["ECCell"].gidst)].stim
                         nc = h.NetCon(src, syn)
-                        
                     ncelist.append(nc)
                     nc.delay = ECDEL
                     nc.weight[0] = ECWGT
@@ -119,7 +120,7 @@ def connectCA3(FCONN, C_P, EM_CA3, EN_CA3, cells, pop_by_name, connect_random_lo
             synN = cell.pre_list[EN_CA3]    # NMDA synapse
             #rs = ranlist[i]  # the corresponding RandomStream
             #rs.start()
-            #rs.r.uniform(0, 1)  # return integer in range 0..1
+            #rs.r.uniform(0, 1)  # return number in range 0..1
             #rc.setrand(rs.r)    # generate random connectivity
             
             # open connections file
@@ -131,7 +132,6 @@ def connectCA3(FCONN, C_P, EM_CA3, EN_CA3, cells, pop_by_name, connect_random_lo
                 # only connection if physical connection exists
                 #if (rc[j] <= cp):
                 if (random.uniform(0,1) <= cp):
-                    #print "   src ", j
     
                     if usepar==1:
                         nc = pc.gid_connect(int(j+pop_by_name["CA3Cell"].gidst), synN)
@@ -269,16 +269,21 @@ def erasecue(pop_by_name,pc): # {local i, j localobj cstim
 # Spike recording
 # tvec, idvec will be Vectors that record all spike times (tvec)
 # and the corresponding id numbers of the cells that spiked (idvec)
+tvec = h.Vector()
+idvec = h.Vector()
+
 def spikerecord(cells):
     if (printflag >1):
         print( "Record spikes...")
     for cell in cells:
-        if (cell.is_art==0):
-            cell._spike_detector = h.NetCon(cell.soma(0.5)._ref_v, None, sec=cell.soma)
-            cell.spike_times = h.Vector()
-            cell._spike_detector.record(cell.spike_times)
-            cell.soma_v = h.Vector().record(cell.soma(0.5)._ref_v)
-        #else: # to print stim cell spikes...
+        # if (cell.is_art==0):
+        #     cell._spike_detector = h.NetCon(cell.soma(0.5)._ref_v, None, sec=cell.soma)
+        #     cell.spike_times = h.Vector()
+        #     cell._spike_detector.record(cell.spike_times)
+        #     cell.soma_v = h.Vector().record(cell.soma(0.5)._ref_v)
+        # #else: # to print stim cell spikes...
+        nc = cell.connect2target(None)
+        nc.record(tvec, idvec, cell.gid)
 
 
 # Record cell voltage traces
@@ -324,33 +329,40 @@ def spikeout(cells,fstem,pc):
     if (pc.id()==0):
         with open("{}_spt.dat".format(fstem), 'w') as f:
             f.write("time\t cell\n")
-            for cell in cells:
-                if (cell.is_art==0):
-                    for spk in cell.spike_times:
-                        f.write("{}\t{}\n".format(spk, cell.gid))
+            for r in range(len(tvec)):
+                f.write("{}\t{}\n".format(tvec[r], idvec[r]))
+            # for cell in cells:
+            #     if (cell.is_art==0):
+            #         for spk in cell.spike_times:
+            #             f.write("{}\t{}\n".format(spk, cell.gid))
     
     pc.barrier()  # wait for all hosts to get to this point
     for rank in range(1,pc.nhost()):
         if (rank==pc.id()):
             with open("{}_spt.dat".format(fstem), 'a') as f:
-                for cell in cells:
-                    if (cell.is_art==0):
-                        for spk in cell.spike_times:
-                            f.write("{}\t{}\n".format(spk, cell.gid))
+
+                for r in range(len(tvec)):
+                    f.write("{:.3f}\t{}\n".format(tvec[r], idvec[r]))
+
+                # for cell in cells:
+                #     if (cell.is_art==0):
+                #         for spk in cell.spike_times:
+                #             f.write("{}\t{}\n".format(spk, cell.gid))
 
 def vout(cells,results,fstem, pc):  
     for key in results:
         with open("{}_{}_{}.dat".format(fstem, key, pc.id()), 'w') as f:
-            for v in results[key]:
-                f.write("{}\n".format(v))
+            for i,v in enumerate(results[key]):
+                f.write("{:.3f}\t{:.2f}\n".format(i*h.dt,v))
 
 
 # produce raster plot of spiking activity
 def spikeplot(cells,tstop,ntot):
     plt.figure()
-    for i, cell in enumerate(cells):
-        if (cell.is_art==0 and cell.spike_times.size()>0):
-            plt.vlines(cell.spike_times, i + 0.5, i + 1.5)
+    plt.scatter(tvec,idvec)
+#    for i, cell in enumerate(cells):
+#        if (cell.is_art==0 and cell.spike_times.size()>0):
+#            plt.vlines(cell.spike_times, i + 0.5, i + 1.5)
     plt.xlabel('Time (ms)')
     plt.ylabel('Neuron (gid)')
     plt.show()

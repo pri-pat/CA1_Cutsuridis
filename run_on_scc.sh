@@ -24,4 +24,4 @@ module load python3/3.6.5
 module load openmpi
 module load neuron/7.6.7
 
-mpirun -np 8 ./x86_64/special -mpi -c "sim1" -c 8 main.py
+mpirun -np 8 ./x86_64/special -mpi -c '"sim1"' -c "0.0"  main.py

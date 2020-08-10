@@ -122,7 +122,7 @@ class PyramidalCell(modelcell):
         h.pt3dadd(105, -59, 0, 1, sec=self.oridist2)
 
         
-        self.soma.L = 20
+        self.soma.L = 10
         self.soma.diam = 10
         self.radTprox.L = 100
         self.radTprox.diam = 4
@@ -133,17 +133,17 @@ class PyramidalCell(modelcell):
 
         self.lm_medium2.L = 100
         self.lm_medium2.diam = 1.5
-        self.lm_thin2.L = 100
+        self.lm_thin2.L = 50
         self.lm_thin2.diam = 1
         self.lm_thick2.L = 100
         self.lm_thick2.diam = 2
         
         
-        self.lm_thick1.L = 200
+        self.lm_thick1.L = 100
         self.lm_thick1.diam = 2
         self.lm_medium1.L = 100
         self.lm_medium1.diam = 1.5
-        self.lm_thin1.L = 100
+        self.lm_thin1.L = 50
         self.lm_thin1.diam = 1
 
         self.oriprox1.L = 100
@@ -157,12 +157,12 @@ class PyramidalCell(modelcell):
         self.oridist2.diam = 1.5
 
 
-        self.axon.L = 100
+        self.axon.L = 150
         self.axon.diam = 1
  
         for sec in self.all:
             h("lf = lambda_f(100)")
-            sec.nseg = int((sec.L/(0.1*h.lf)+.9)/2)*2 + 1 
+            sec.nseg = int((sec.L/(0.1*h.lf)+.9)/2)*2 + 1 # TODO This equation is the same but sometimes produces smaller numbers of nseg than the hoc one
 
     def build_subsets(self):
         self.all = h.SectionList()
@@ -769,10 +769,6 @@ class OLMCell(modelcell):
 
     def define_biophysics(self):
         self.Rm = 20000 # 1/5e-05    
-        
-        for sec in self.all:
-            self.Ra = 150
-            self.cm = 1.3
 
         self.soma.insert("IA")
         self.soma.insert("Ih")
@@ -818,6 +814,10 @@ class OLMCell(modelcell):
             seg.gnaaxon_Naaxon = 0.01712
             seg.gl_Naaxon = 1/self.Rm
             seg.el_Naaxon = -70
+        
+        for sec in self.all:
+            sec.Ra = 150
+            sec.cm = 1.3
 
 
     def connect2target(self,target, delay = 1, weight=0.04): # { localobj nc #$o1 target point process, optional $o2 returned NetCon
@@ -1176,8 +1176,9 @@ class BasketCell(modelcell):
                 seg.gskbar_gskch = 0.000002		# Ca2+-dependent K (SK) conductance
            
             sec.insert("mykca") 
-            for seg in sec:
-                seg.gkbar_mykca = 0.0002			# Ca2+ and Voltage-dependent K+ (BK) conductance
+            # ommenting out gbar to match their typo
+            # for seg in sec:
+            #     seg.gkbar_mykca = 0.0002			# Ca2+ and Voltage-dependent K+ (BK) conductance
 		 					# make catau slower70e-3 	cao=2 cai=50.e-6
             # self.cm = Not setting cm
             sec.Ra = 100			# 31.3 +/- 10.9
@@ -1619,8 +1620,11 @@ class AACell(modelcell):
                 seg.gskbar_gskch = 0.000002		# Ca2+-dependent K (SK) conductance
            
             sec.insert("mykca") 
-            for seg in sec:
-                seg.gkbar_mykca = 0.0002			# Ca2+ and Voltage-dependent K+ (BK) conductance
+            # They had a typo that prevented
+            # them from setting this gbar, so
+            # I am temporarily commenting mine out
+            # for seg in sec:
+            #     seg.gkbar_mykca = 0.0002			# Ca2+ and Voltage-dependent K+ (BK) conductance
 		 					# make catau slower70e-3 	cao=2 cai=50.e-6
             sec.Ra = 100			# 31.3 +/- 10.9
             sec.enat = 55
@@ -2000,8 +2004,9 @@ class BistratifiedCell(modelcell):
                 seg.gskbar_gskch = 0.000002		# Ca2+-dependent K (SK) conductance
            
             sec.insert("mykca") 
-            for seg in sec:
-                seg.gkbar_mykca = 0.0002			# Ca2+ and Voltage-dependent K+ (BK) conductance
+            # match their typo
+            # for seg in sec:
+            #     seg.gkbar_mykca = 0.0002			# Ca2+ and Voltage-dependent K+ (BK) conductance
 		 					# make catau slower70e-3 	cao=2 cai=50.e-6
             sec.Ra = 100			# 31.3 +/- 10.9
             sec.enat = 55

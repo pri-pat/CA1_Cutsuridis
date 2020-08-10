@@ -32,18 +32,23 @@ h.load_file("nrngui.hoc") # load_file
 #################
 # PARAMETERS
 #################
+keepoldtypo=1
 usepar = 1
 netfcns.usepar = usepar
 printflag = 1 # 0: almost silent, 1: some prints, 2: many prints
 
 # Set default values for parameters that can be passed in at the command line
-plotflag = 0
+plotflag = 1
 network_scale = 1 # set to 1 for full scale or 0.2 for a quick test with a small network
-scaleEScon = 1
+scaleEScon = 1 # scaling factor for number of excitatory connections in the network, should be set to 1
 
 numCycles = 8
 simname="par"
 connect_random_low_start_ = 1  # low seed for mcell_ran4_init()
+
+electrostim = 0 # 0 = no stimulation, 1 = stimulation according to parameters set farther down in code
+percentDeath = .0 # fraction of pyramidal cells to kill off
+
 
 # Check for parameters being passed in via the command line
 argadd = 1
@@ -79,7 +84,7 @@ from connprops import *
 
 SPATT = calcSPATT(network_scale)
 
-SIMDUR = STARTDEL + (THETA*numCycles)    # simulation duration (msecs)
+SIMDUR = 90 # STARTDEL + (THETA*numCycles)    # simulation duration (msecs)
 
 h.tstop = SIMDUR
 h.celsius = 34
@@ -163,7 +168,7 @@ for pop in poplist:
             newcell.core_i = int(core_i)
             newcell.coretype_i = int(coretype_i)
             cells.append(newcell)
-            ranlist.append(h.RandomStream(i))  # ranlist.o(i) corresponds to
+            ranlist.append(h.RandomStream(j))  # ranlist.o(i) corresponds to
             i+=1
             pcst +=pc.nhost()
             core_i += 1
@@ -276,8 +281,13 @@ connlist.append(popConn(popname="AACell",        prepop="ECCell", prenum=max([po
 
 connlist.append(popConn(popname="BasketCell",    prepop="SEPCell", prenum=pop_by_name["SEPCell"].num, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=II_SEP, synend=II_SEP+1)) # SEP_BC
 connlist.append(popConn(popname="AACell",        prepop="SEPCell", prenum=pop_by_name["SEPCell"].num, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=II_SEP, synend=II_SEP+1)) # SEP_AAC
-connlist.append(popConn(popname="BistratifiedCell", prepop="SEPCell", prenum=pop_by_name["SEPCell"].num, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=II_SEP, synend=II_SEP+1)) # SEP_BSC
-connlist.append(popConn(popname="OLMCell",       prepop="SEPCell", prenum=pop_by_name["SEPCell"].num, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=IO_IN, synend=IO_IN)) # SEP_OLM
+
+if keepoldtypo:
+    connlist.append(popConn(popname="BasketCell", prepop="SEPCell", prenum=pop_by_name["SEPCell"].num, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=II_SEP, synend=II_SEP+1)) # SEP_BSC
+    connlist.append(popConn(popname="AACell",       prepop="SEPCell", prenum=pop_by_name["SEPCell"].num, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=IO_IN, synend=IO_IN)) # SEP_OLM
+else:
+    connlist.append(popConn(popname="BistratifiedCell", prepop="SEPCell", prenum=pop_by_name["SEPCell"].num, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=II_SEP, synend=II_SEP+1)) # SEP_BSC
+    connlist.append(popConn(popname="OLMCell",       prepop="SEPCell", prenum=pop_by_name["SEPCell"].num, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=IO_IN, synend=IO_IN)) # SEP_OLM
 
 connlist.append(popConn(popname="PyramidalCell", prepop="PyramidalCell", prenum=max([1 * scaleEScon, 1]), type="AMPA", weight=Pcell2Pcell_weight, delay=Pcell2Pcell_delay, synst=E_PC, synend=E_PC)) # PC_PC
 connlist.append(popConn(popname="BasketCell",    prepop="PyramidalCell", prenum=max([pop_by_name['PyramidalCell'].num * scaleEScon, 1]), type="AMPA", weight = Pcell2Bcell_weight, delay = Pcell2Bcell_delay, synst=EI_PC, synend=EI_PC+1)) # PC_BC
@@ -339,7 +349,47 @@ netfcns.mkEC(cells, ranlist, pop_by_name, pc)
 netfcns.spikerecord(cells)
 results = netfcns.vrecord(cells,pop_by_name, iPPC, iNPPC)
 
+#%% Cell Death and Electrostim
 
+num2pick = int(percentDeath*pop_by_name["PyramidalCell"].num) # number of cells
+
+deadlist = []
+
+new_random = h.Random(400)
+new_random.discunif(pop_by_name["PyramidalCell"].gidst, pop_by_name["PyramidalCell"].gidend)
+
+for x in range(num2pick):
+    # pick a random number that corresponds to a specific pyramidal cell
+    # append that number to the deadlist
+    tmpvar = int(new_random.repick())
+    while (deadlist.count(tmpvar)>0):
+        tmpvar = int(new_random.repick())
+        
+    deadlist.append(tmpvar)
+
+print("List of cells that died:")
+for cell2kill in deadlist:
+    print(cell2kill)
+    model_cell = pc.gid2cell(cell2kill)
+    # keep remaining lines that add an IClamp and set its properties
+
+    stimobj = h.IClamp(model_cell.soma(0.5))
+    stimobj.delay = 2
+    stimobj.dur = SIMDUR
+    stimobj.amp = -.4    
+
+if (electrostim==1):
+    for cell in range(pop_by_name["PyramidalCell"].gidst, pop_by_name["PyramidalCell"].gidend):
+        if (deadlist.count(cell)==0 and pc.gid_exists(cell)):        
+            model_cell = pc.gid2cell(cell)
+        
+            electrostim = h.IClamp(model_cell.soma(0.5))
+            electrostim.delay = 2
+            electrostim.dur = SIMDUR
+            electrostim.amp = .05 # nA .... (1000 pA)  
+            # myvec = h.Vector() 
+            # myvec # fill with a pattern
+            # myvec.play(electrostim.amp) 
 
 #%%
 
