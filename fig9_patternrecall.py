@@ -15,9 +15,9 @@ def plot_results(simname,netfile='N100S20P5',NUMCYCLES=numCycles, scaleDown=1):
     
     
     if scaleDown<1:
-        FPATT = r'Weights\patts'+netfile+'Scaled.dat' # TODO: Replace with your full path to the file
+        FPATT = r'Weights/patts'+netfile+'Scaled.dat' # TODO: Replace with your full path to the file
     else:
-        FPATT = r'Weights\patts'+netfile+'.dat' # TODO: Replace with your full path to the file
+        FPATT = r'Weights/patts'+netfile+'.dat' # TODO: Replace with your full path to the file
         
     #NPATT = 1   # number of patterns
     CPATT = 0  # index of cue pattern
@@ -141,9 +141,9 @@ def calc_performance(simname,netfile='N100S20P5',NUMCYCLES=numCycles, scaleDown=
     
     
     if scaleDown<1:
-        FPATT = r'Weights\patts'+netfile+'Scaled.dat' # TODO: Replace with your full path to the file
+        FPATT = r'Weights/patts'+netfile+'Scaled.dat' # TODO: Replace with your full path to the file
     else:
-        FPATT = r'Weights\patts'+netfile+'.dat' # TODO: Replace with your full path to the file
+        FPATT = r'Weights/patts'+netfile+'.dat' # TODO: Replace with your full path to the file
         
     #NPATT = 1   # number of patterns
     CPATT = 0  # index of cue pattern

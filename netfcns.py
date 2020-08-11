@@ -63,7 +63,7 @@ def connectEC(FPATT, ECPATT, NPATT, synstart, numsyn, cells, pop_by_name, pc):# 
     
     # read pattern file (ECPATT=num rows, NPATT = num columns)
     cue = np.loadtxt(fname = FPATT)
-    if (cue.shape != (ECPATT, NPATT) and printflag>1):
+    if (pc.id()==0 and cue.shape != (ECPATT, NPATT) and printflag>1):
         print("The cue data is a different shape than expected:", cue.shape)
 
 
@@ -212,7 +212,7 @@ def mkinputs(cells, ranlist, pop_by_name, pc): #{local i localobj stim, rs
 def mkEC(cells, ranlist, pop_by_name, pc): # {local i, necs localobj cstim, rs
     EClist = []
     necs = 0
-    if (printflag >0):
+    if (pc.id()==0 and printflag >0):
         print("Make EC input...")
     for i in range(pop_by_name["ECCell"].gidst,pop_by_name["ECCell"].gidend+1):
         if (pc.gid_exists(i)):
@@ -232,7 +232,7 @@ def mkEC(cells, ranlist, pop_by_name, pc): # {local i, necs localobj cstim, rs
 
 # setup activity pattern in input cue stims
 def mkcue(FPATT, CPATT, CFRAC, NPATT, SPATT, cells, ranlist, pop_by_name, pc):
-    if (printflag >0):
+    if (pc.id()==0 and printflag >0):
         print( "Make cue (CA3) input...")
     # open patterns file
     cue = np.loadtxt(fname = FPATT) # read pattern
@@ -243,7 +243,7 @@ def mkcue(FPATT, CPATT, CFRAC, NPATT, SPATT, cells, ranlist, pop_by_name, pc):
         if (pc.gid_exists(i+pop_by_name["CA3Cell"].gidst)):
             if (ncue <= SPATT*CFRAC):     # fraction of active cells in cue
                 if (cue[i,0] == 1): #TODO find the correct column
-                    if (printflag >1):
+                    if (pc.id()==0 and printflag >1):
                         print("Cue cell ", i)
                     cstim = pc.gid2cell(i+pop_by_name["CA3Cell"].gidst)
                     rs = ranlist[int(cstim.core_i)]
@@ -260,7 +260,7 @@ def mkcue(FPATT, CPATT, CFRAC, NPATT, SPATT, cells, ranlist, pop_by_name, pc):
                     cuelist.append(i)
                     ncue += 1
                     
-    if (printflag >1):  
+    if (pc.id()==0 and printflag >1):  
         print("  cue size ", ncue)
 
 # remove activity pattern in input cue stims
@@ -274,8 +274,8 @@ def erasecue(pop_by_name,pc): # {local i, j localobj cstim
 # tvec, idvec will be Vectors that record all spike times (tvec)
 # and the corresponding id numbers of the cells that spiked (idvec)
 
-def spikerecord(cells):
-    if (printflag >1):
+def spikerecord(cells, pc):
+    if (pc.id()==0 and printflag >1):
         print( "Record spikes...")
     for cell in cells:
         # if (cell.is_art==0):
@@ -293,8 +293,8 @@ def spikerecord(cells):
 # Vectors that record voltages from non-pattern PC
 # Vectors that record voltages from INs
 
-def vrecord(cells,pop_by_name, iPPC, iNPPC):    
-    if (printflag >1):
+def vrecord(cells,pop_by_name, iPPC, iNPPC, pc):    
+    if (pc.id()==0 and printflag >1):
         print( "Record example voltage traces...")
     results = {}
     for cell in cells:	# loop over possible target cells
