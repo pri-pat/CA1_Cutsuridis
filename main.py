@@ -65,11 +65,11 @@ if (result.stdout.decode('utf-8')[:3] == "scc"): # scc has an odd way of account
 if len(sys.argv)>(startlen):
     simname = sys.argv[startlen]
     if len(sys.argv)>(argadd+startlen):
-        numCycles = int(sys.argv[argadd+startlen])
+        percentDeath = float(sys.argv[argadd+startlen])
         if len(sys.argv)>(2*argadd+startlen):
-            percentDeath = float(sys.argv[2*argadd+startlen])
+            electrostim = float(sys.argv[2*argadd+startlen])
             if len(sys.argv)>(3*argadd+startlen):
-                electrostim = float(sys.argv[3*argadd+startlen])
+                numCycles = int(sys.argv[3*argadd+startlen])
                 if len(sys.argv)>(4*argadd+startlen):
                     connect_random_low_start_ = float(sys.argv[4*argadd+startlen])
                         
@@ -389,19 +389,19 @@ for cell2kill in deadlist:
     list_clamps.append(stimobj)
 
 list_of_stims=[]
-if (electrostim==1):
+if (electrostim>0):
     for cell in range(pop_by_name["PyramidalCell"].gidst, pop_by_name["PyramidalCell"].gidend):
         if (deadlist.count(cell)==0 and pc.gid_exists(cell)):        
             model_cell = pc.gid2cell(cell)
         
-            electrostim = h.IClamp(model_cell.soma(0.5))
-            electrostim.delay = 2
-            electrostim.dur = SIMDUR
-            electrostim.amp = .05 # nA .... (1000 pA) 
-            list_of_stims.append(electrostim)
+            electclamp = h.IClamp(model_cell.soma(0.5))
+            electclamp.delay = 2
+            electclamp.dur = SIMDUR
+            electclamp.amp = electrostim # nA .... (1000 pA) 
+            list_of_stims.append(electclamp)
             # myvec = h.Vector() 
             # myvec # fill with a pattern
-            # myvec.play(electrostim.amp) 
+            # myvec.play(electclamp.amp) 
 
 #%%
 
