@@ -451,11 +451,6 @@ h.xopen("midbalfcn.hoc")
 h('objref fihw')
 h('fihw = new FInitializeHandler(2, "midbal()")')
 
-# Initialize the spikeraster
-tvec = h.Vector()
-idvec = h.Vector()
-
-
 # run the simulation
 # if (batchflag==1):
 if (printflag>0):
