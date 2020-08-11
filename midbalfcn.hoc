@@ -7,7 +7,7 @@ proc midbal() {local wt, thisstep
 	if (t>0) {
 		thisstep = wt - walltime	// Calculate the real time taken by the most
 
-		if (p.pc.id==0) { printf("%g ms interval at t=%g ms was %g s\n", StepBy, t, thisstep) }
+		if (p.usepar==0 || p.pc.id==0) { printf("%g ms interval at t=%g ms was %g s\n", StepBy, t, thisstep) }
 	}
 	
 	walltime = wt
