@@ -161,7 +161,7 @@ for pop in poplist:
 #    for j in range(int(pop.num)):    # in serial, make all cells on one core
     for j in range(int(pop.gidst),int(pop.gidend)+1):    # in parallel, make every nth cell on one core                             
         if (pc.gid_exists(j)):
-            if (printflag>1):
+            if (pc.id()==0 and printflag>1):
                 print("newcell = cellClasses."+pop.classtype+ "(int("+str(j)+"))")
             exec("newcell = cellClasses."+pop.classtype+ "(int("+str(j)+"))")
             if (pop.isart==1):
@@ -354,8 +354,8 @@ netfcns.mkEC(cells, ranlist, pop_by_name, pc)
 # SET UP RECORDING OF RESULTS
 #################
 
-netfcns.spikerecord(cells)
-results = netfcns.vrecord(cells,pop_by_name, iPPC, iNPPC)
+netfcns.spikerecord(cells,pc)
+results = netfcns.vrecord(cells,pop_by_name, iPPC, iNPPC,pc)
 
 #%% Cell Death and Electrostim
 
@@ -375,10 +375,12 @@ for x in range(num2pick):
         
     deadlist.append(tmpvar)
 
-print("List of cells that died:")
+if (pc.id()==0):
+    print("List of cells that died:")
 list_clamps=[]
 for cell2kill in deadlist:
-    print(cell2kill)
+    if (pc.id()==0):
+        print(cell2kill)
     if (pc.gid_exists(cell2kill)):
         model_cell = pc.gid2cell(cell2kill)
         # keep remaining lines that add an IClamp and set its properties
@@ -417,7 +419,7 @@ def prun():
     pc.barrier()  # wait for all hosts to get to this point
     pc.set_maxstep(1);
     h.stdinit()
-    if (printflag>1):
+    if (pc.id()==0 and printflag>1):
         print("Parallel run is going to run till",h.tstop)
     pc.psolve(h.tstop);
     netfcns.spikeout(cells,fstem,pc)
@@ -454,20 +456,20 @@ h('fihw = new FInitializeHandler(2, "midbal()")')
 
 # run the simulation
 # if (batchflag==1):
-if (printflag>0):
+if (pc.id()==0 and printflag>0):
     print("Now running simulation at scale = ", network_scale, " for time = ", SIMDUR, " with scaleEScon = ", scaleEScon)
 
 if usepar==1:
     prun() # run and print results
 else:
-    if (printflag>0):
+    if (pc.id()==0 and printflag>0):
         print("Running serial regular run with tstop=",h.tstop)
     h.run()    
     # print out the results
     spikeout = netfcns.spikeout(cells,fstem,pc)
     vout = netfcns.vout(cells,results,fstem,pc)
 
-if (printflag>0):
+if (pc.id()==0 and printflag>0):
     print( "** Finished running sim and printing results **")
 
 import fig9_patternrecall as fig9
