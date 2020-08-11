@@ -379,14 +379,15 @@ print("List of cells that died:")
 list_clamps=[]
 for cell2kill in deadlist:
     print(cell2kill)
-    model_cell = pc.gid2cell(cell2kill)
-    # keep remaining lines that add an IClamp and set its properties
-
-    stimobj = h.IClamp(model_cell.soma(0.5))
-    stimobj.delay = 2
-    stimobj.dur = SIMDUR
-    stimobj.amp = -.4    
-    list_clamps.append(stimobj)
+    if (pc.gid_exists(cell2kill)):
+        model_cell = pc.gid2cell(cell2kill)
+        # keep remaining lines that add an IClamp and set its properties
+    
+        stimobj = h.IClamp(model_cell.soma(0.5))
+        stimobj.delay = 2
+        stimobj.dur = SIMDUR
+        stimobj.amp = -.4    
+        list_clamps.append(stimobj)
 
 list_of_stims=[]
 if (electrostim>0):
