@@ -92,9 +92,6 @@ SIMDUR = STARTDEL + (THETA*numCycles)    # simulation duration (msecs)
 h.tstop = SIMDUR
 h.celsius = 34
 
-if (printflag>0):
-    print("simname = {} will run for {} ms, results will be in {}/*.dat".format(simname, SIMDUR, fstem))
-
 #%%
 
 #################
@@ -133,12 +130,14 @@ nclist = []
 h('{load_file("ranstream.hoc")}')  # to give each cell its own sequence generator
 h('{load_file("netparmpi.hoc")}')  # to give each cell its own sequence generator
 
-pc = h.ParallelContext() # Even if running serially, we can create and use this
-                         # in serial, pc.nhost == 1
 pnm = h.ParallelNetManager(ncell)	# Set up a parallel net manager for all the cells
 pc = pnm.pc # Even if running serially, we can create and use this
                          # in serial, pc.nhost == 1
 pnm.round_robin()					#Incorporate all processors - cells 0 through ncell-1
+
+
+if (pc.id()==0 and printflag>0):
+    print("simname = {} will run for {} ms, results will be in {}/*.dat".format(simname, SIMDUR, fstem))
 
 # Set GID ranges of cells and Load Cell Class definitions
 pop_by_name={}
