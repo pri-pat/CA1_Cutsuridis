@@ -4,7 +4,7 @@ Created on Tue Aug  4 21:53:18 2020
 
 @author: mbezaire
 """
-
+keepoldtypo = 0
 
 from neuron import h
 
@@ -1176,9 +1176,10 @@ class BasketCell(modelcell):
                 seg.gskbar_gskch = 0.000002		# Ca2+-dependent K (SK) conductance
            
             sec.insert("mykca") 
-            # ommenting out gbar to match their typo
-            # for seg in sec:
-            #     seg.gkbar_mykca = 0.0002			# Ca2+ and Voltage-dependent K+ (BK) conductance
+            if (keepoldtypo==0):
+                # commenting out gbar to match their typo
+                for seg in sec:
+                    seg.gkbar_mykca = 0.0002			# Ca2+ and Voltage-dependent K+ (BK) conductance
 		 					# make catau slower70e-3 	cao=2 cai=50.e-6
             # self.cm = Not setting cm
             sec.Ra = 100			# 31.3 +/- 10.9
@@ -1620,11 +1621,10 @@ class AACell(modelcell):
                 seg.gskbar_gskch = 0.000002		# Ca2+-dependent K (SK) conductance
            
             sec.insert("mykca") 
-            # They had a typo that prevented
-            # them from setting this gbar, so
-            # I am temporarily commenting mine out
-            # for seg in sec:
-            #     seg.gkbar_mykca = 0.0002			# Ca2+ and Voltage-dependent K+ (BK) conductance
+            if (keepoldtypo==0):
+                # commenting out gbar to match their typo
+                for seg in sec:
+                    seg.gkbar_mykca = 0.0002			# Ca2+ and Voltage-dependent K+ (BK) conductance
 		 					# make catau slower70e-3 	cao=2 cai=50.e-6
             sec.Ra = 100			# 31.3 +/- 10.9
             sec.enat = 55
@@ -2004,9 +2004,10 @@ class BistratifiedCell(modelcell):
                 seg.gskbar_gskch = 0.000002		# Ca2+-dependent K (SK) conductance
            
             sec.insert("mykca") 
-            # match their typo
-            # for seg in sec:
-            #     seg.gkbar_mykca = 0.0002			# Ca2+ and Voltage-dependent K+ (BK) conductance
+            if (keepoldtypo==0):
+                # commenting out gbar to match their typo
+                for seg in sec:
+                    seg.gkbar_mykca = 0.0002			# Ca2+ and Voltage-dependent K+ (BK) conductance
 		 					# make catau slower70e-3 	cao=2 cai=50.e-6
             sec.Ra = 100			# 31.3 +/- 10.9
             sec.enat = 55

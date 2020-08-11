@@ -38,12 +38,10 @@ def connectcells(cells, ranlist, nclist, pop_by_name, post_type, pre_type, synst
                         nc = cells[r].connect2target(syn)
                     else:
                         nc = pc.gid_connect(r, syn)
-                    if (cell.gid==1):
-                        print("pre ",r, " from ", synstart, " to ", synend)
                     
-                    nclist.append(nc)
                     nc.delay = delay
                     nc.weight[0] = weight
+                    nclist.append(nc)
                 
                 u[r-int(pop_by_name[pre_type].gidst)] = 1
                 nsyn += 1
@@ -88,6 +86,7 @@ def connectEC(FPATT, ECPATT, NPATT, synstart, numsyn, cells, pop_by_name, pc):# 
                     ncelist.append(nc)
                     nc.delay = ECDEL
                     nc.weight[0] = ECWGT
+    return ncelist
                     
 
 # connects the CA3 input layer to output cells (PCs and INs)
@@ -152,8 +151,8 @@ def connectCA3(FCONN, C_P, EM_CA3, EN_CA3, cells, pop_by_name, connect_random_lo
                     
                     ncslist.append(nc2)
                     nc2.delay = CDEL
-    
-                    if (conns[j,0] == 1): # TODO access the correct column
+
+                    if (conns[i,j] == 1): # TODO access the correct column
                         # set up connection from source to target
                         #nc = pc.gid_connect(j+iCA3, syn)
                         nc2.weight[0] = CHWGT
@@ -161,7 +160,8 @@ def connectCA3(FCONN, C_P, EM_CA3, EN_CA3, cells, pop_by_name, connect_random_lo
                         # set up connection from source to target
                         #nc = pc.gid_connect(j+iCA3, syn)
                         nc2.weight[0] = CLWGT    # unlearned weight
-    
+
+    return ncslist
 
 # sets the CA3, EC and Septal background inputs
 def mkinputs(cells, ranlist, pop_by_name, pc): #{local i localobj stim, rs 
@@ -256,8 +256,8 @@ def mkcue(FPATT, CPATT, CFRAC, NPATT, SPATT, cells, ranlist, pop_by_name, pc):
                     cuelist.append(i)
                     ncue += 1
                     
-                if (printflag >1):  
-                    print("  cue size ", ncue)
+    if (printflag >1):  
+        print("  cue size ", ncue)
 
 # remove activity pattern in input cue stims
 def erasecue(pop_by_name,pc): # {local i, j localobj cstim
@@ -269,8 +269,6 @@ def erasecue(pop_by_name,pc): # {local i, j localobj cstim
 # Spike recording
 # tvec, idvec will be Vectors that record all spike times (tvec)
 # and the corresponding id numbers of the cells that spiked (idvec)
-tvec = h.Vector()
-idvec = h.Vector()
 
 def spikerecord(cells):
     if (printflag >1):
@@ -349,12 +347,15 @@ def spikeout(cells,fstem,pc):
                 #         for spk in cell.spike_times:
                 #             f.write("{}\t{}\n".format(spk, cell.gid))
 
+    return (tvec, idvec)
+
 def vout(cells,results,fstem, pc):  
     for key in results:
-        with open("{}_{}_{}.dat".format(fstem, key, pc.id()), 'w') as f:
+        with open("{}_{}.dat".format(fstem, key), 'w') as f:
             for i,v in enumerate(results[key]):
                 f.write("{:.3f}\t{:.2f}\n".format(i*h.dt,v))
 
+    return results
 
 # produce raster plot of spiking activity
 def spikeplot(cells,tstop,ntot):
@@ -381,6 +382,18 @@ def vplot(cells,results):
     plt.legend(loc="upper right")
     plt.show()
 
+    
+    plt.figure()
+        
+    t = np.arange(0,h.t+h.dt,h.dt)
+    if (len(t)!=len(results["pvsoma"])):
+        t = np.arange(0,h.t,h.dt)
+    plt.plot(t,results["pvsoma"])
+        
+    plt.xlabel('Time (ms)')
+    plt.ylabel('Membrane Potential (mV)')
+    plt.show()
+    
 # panel for simulation results
 def xspikeres():
     h.xpanel("Spike results")

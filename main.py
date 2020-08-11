@@ -32,10 +32,12 @@ h.load_file("nrngui.hoc") # load_file
 #################
 # PARAMETERS
 #################
-keepoldtypo=1
+keepoldtypo=0 # rerun the old version of the code, including typos
+cellClasses.keepoldtypo = keepoldtypo
 usepar = 1
 netfcns.usepar = usepar
 printflag = 1 # 0: almost silent, 1: some prints, 2: many prints
+netfcns.printflag = printflag
 
 # Set default values for parameters that can be passed in at the command line
 plotflag = 1
@@ -46,6 +48,7 @@ numCycles = 8
 simname="par"
 connect_random_low_start_ = 1  # low seed for mcell_ran4_init()
 
+netfile = 'N100S20P5'
 electrostim = 0 # 0 = no stimulation, 1 = stimulation according to parameters set farther down in code
 percentDeath = .0 # fraction of pyramidal cells to kill off
 
@@ -64,9 +67,9 @@ if len(sys.argv)>(startlen):
     if len(sys.argv)>(argadd+startlen):
         numCycles = int(sys.argv[argadd+startlen])
         if len(sys.argv)>(2*argadd+startlen):
-            network_scale = int(sys.argv[2*argadd+startlen])
+            percentDeath = float(sys.argv[2*argadd+startlen])
             if len(sys.argv)>(3*argadd+startlen):
-                scaleEScon = float(sys.argv[3*argadd+startlen])
+                electrostim = float(sys.argv[3*argadd+startlen])
                 if len(sys.argv)>(4*argadd+startlen):
                     connect_random_low_start_ = float(sys.argv[4*argadd+startlen])
                         
@@ -84,7 +87,7 @@ from connprops import *
 
 SPATT = calcSPATT(network_scale)
 
-SIMDUR = 90 # STARTDEL + (THETA*numCycles)    # simulation duration (msecs)
+SIMDUR = STARTDEL + (THETA*numCycles)    # simulation duration (msecs)
 
 h.tstop = SIMDUR
 h.celsius = 34
@@ -168,7 +171,10 @@ for pop in poplist:
             newcell.core_i = int(core_i)
             newcell.coretype_i = int(coretype_i)
             cells.append(newcell)
-            ranlist.append(h.RandomStream(j))  # ranlist.o(i) corresponds to
+            if (j==206):
+                ranlist.append(h.RandomStream(j+500))  # ranlist.o(i) corresponds to
+            else:
+                ranlist.append(h.RandomStream(j))  # ranlist.o(i) corresponds to
             i+=1
             pcst +=pc.nhost()
             core_i += 1
@@ -212,14 +218,16 @@ NSTORE = 5    # number of new patterns to store
 CPATT = 1    # index of cue pattern
 CFRAC = 1    # fraction of active cells in cue
 
+
 # file name of connection weights and patterns
 # (cue and EC patterns taken from FSTORE file to implement storage)
 # (use same file for FPATT and FSTORE to test recall only)
 if network_scale==1:
-    FCONN = "Weights/wgtsN100S20P5.dat" #"Weights/wgtsN100S20P5.dat"
-    FPATT = "Weights/pattsN100S20P5.dat"    # "Weights/pattsN100S20P5.dat"    # already stored patterns
-    FSTORE = "Weights/pattsN100S20P5.dat"    # "Weights/pattsN100S20P5.dat"    # new patterns to store
+    FCONN = "Weights/wgts"+netfile+".dat" #"Weights/wgtsN100S20P5.dat"
+    FPATT = "Weights/patts"+netfile+".dat"    # "Weights/pattsN100S20P5.dat"    # already stored patterns
+    FSTORE = "Weights/patts"+netfile+".dat"    # "Weights/pattsN100S20P5.dat"    # new patterns to store
 else:
+    netfile = 'N100S20P5'    
     FCONN = "Weights/wgtsN100S20P5scaled.dat" #"Weights/wgtsN100S20P5.dat"
     FPATT = "Weights/pattsN100S20P5scaled.dat"    # "Weights/pattsN100S20P5.dat"    # already stored patterns
     FSTORE = "Weights/pattsN100S20P5scaled.dat"    # "Weights/pattsN100S20P5.dat"    # new patterns to store
@@ -283,11 +291,11 @@ connlist.append(popConn(popname="BasketCell",    prepop="SEPCell", prenum=pop_by
 connlist.append(popConn(popname="AACell",        prepop="SEPCell", prenum=pop_by_name["SEPCell"].num, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=II_SEP, synend=II_SEP+1)) # SEP_AAC
 
 if keepoldtypo:
-    connlist.append(popConn(popname="BasketCell", prepop="SEPCell", prenum=pop_by_name["SEPCell"].num, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=II_SEP, synend=II_SEP+1)) # SEP_BSC
-    connlist.append(popConn(popname="AACell",       prepop="SEPCell", prenum=pop_by_name["SEPCell"].num, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=IO_IN, synend=IO_IN)) # SEP_OLM
+    connlist.append(popConn(popname="BasketCell", prepop="SEPCell", prenum=pop_by_name["SEPCell"].num, type="GABAA", weight=SEPWGTL, delay=SEPDEL, synst=II_SEP, synend=II_SEP+1)) # SEP_BSC
+    connlist.append(popConn(popname="AACell",       prepop="SEPCell", prenum=pop_by_name["SEPCell"].num, type="GABAA", weight=SEPWGTL, delay=SEPDEL, synst=IO_IN, synend=IO_IN)) # SEP_OLM
 else:
-    connlist.append(popConn(popname="BistratifiedCell", prepop="SEPCell", prenum=pop_by_name["SEPCell"].num, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=II_SEP, synend=II_SEP+1)) # SEP_BSC
-    connlist.append(popConn(popname="OLMCell",       prepop="SEPCell", prenum=pop_by_name["SEPCell"].num, type="GABAA", weight=SEPWGT, delay=SEPDEL, synst=IO_IN, synend=IO_IN)) # SEP_OLM
+    connlist.append(popConn(popname="BistratifiedCell", prepop="SEPCell", prenum=pop_by_name["SEPCell"].num, type="GABAA", weight=SEPWGTL, delay=SEPDEL, synst=II_SEP, synend=II_SEP+1)) # SEP_BSC
+    connlist.append(popConn(popname="OLMCell",       prepop="SEPCell", prenum=pop_by_name["SEPCell"].num, type="GABAA", weight=SEPWGTL, delay=SEPDEL, synst=IO_IN, synend=IO_IN)) # SEP_OLM
 
 connlist.append(popConn(popname="PyramidalCell", prepop="PyramidalCell", prenum=max([1 * scaleEScon, 1]), type="AMPA", weight=Pcell2Pcell_weight, delay=Pcell2Pcell_delay, synst=E_PC, synend=E_PC)) # PC_PC
 connlist.append(popConn(popname="BasketCell",    prepop="PyramidalCell", prenum=max([pop_by_name['PyramidalCell'].num * scaleEScon, 1]), type="AMPA", weight = Pcell2Bcell_weight, delay = Pcell2Bcell_delay, synst=EI_PC, synend=EI_PC+1)) # PC_BC
@@ -322,14 +330,14 @@ nclist = []
 # # Make connections with data from above
 for conn in connlist: 
     conn.connsMade = netfcns.connectcells(cells,ranlist, nclist, pop_by_name, conn.popname, conn.prepop, synstart=conn.synst, synend=conn.synend, npresyn=conn.prenum, weight=conn.weight, delay= conn.delay, pc = pc)
-    if (printflag>1):
-        print("newtar starts with ", pop_by_name[conn.popname].gidst, " and pre starts with ", pop_by_name[conn.prepop].gidst , " and conns made = ", conn.connsMade)
+    #if (printflag>1):
+    #    print("newtar starts with ", pop_by_name[conn.popname].gidst, " and pre starts with ", pop_by_name[conn.prepop].gidst , " and conns made = ", conn.connsMade)
 
 #netfcns.mkinputs(cells, pop_by_name['CA3Cell'].gidst, pop_by_name['ECCell'].gidst, pop_by_name['SEPCell'].gidst, ntot, pop_by_name)
 # EC input to PCs
-netfcns.connectEC(FPATT, ECPATT, NPATT, E_EC, 2, cells,  pop_by_name, pc)	#  restore existing pattern
+ncelist = netfcns.connectEC(FPATT, ECPATT, NPATT, E_EC, 2, cells,  pop_by_name, pc)	#  restore existing pattern
 # CA3 input to PCs
-netfcns.connectCA3(FCONN, C_P, EM_CA3, EN_CA3, cells, pop_by_name, connect_random_low_start_, pc)	# with modifiable synapses
+ncslist = netfcns.connectCA3(FCONN, C_P, EM_CA3, EN_CA3, cells, pop_by_name, connect_random_low_start_, pc)	# with modifiable synapses
 #%%
 
 #################
@@ -368,6 +376,7 @@ for x in range(num2pick):
     deadlist.append(tmpvar)
 
 print("List of cells that died:")
+list_clamps=[]
 for cell2kill in deadlist:
     print(cell2kill)
     model_cell = pc.gid2cell(cell2kill)
@@ -377,7 +386,9 @@ for cell2kill in deadlist:
     stimobj.delay = 2
     stimobj.dur = SIMDUR
     stimobj.amp = -.4    
+    list_clamps.append(stimobj)
 
+list_of_stims=[]
 if (electrostim==1):
     for cell in range(pop_by_name["PyramidalCell"].gidst, pop_by_name["PyramidalCell"].gidend):
         if (deadlist.count(cell)==0 and pc.gid_exists(cell)):        
@@ -386,7 +397,8 @@ if (electrostim==1):
             electrostim = h.IClamp(model_cell.soma(0.5))
             electrostim.delay = 2
             electrostim.dur = SIMDUR
-            electrostim.amp = .05 # nA .... (1000 pA)  
+            electrostim.amp = .05 # nA .... (1000 pA) 
+            list_of_stims.append(electrostim)
             # myvec = h.Vector() 
             # myvec # fill with a pattern
             # myvec.play(electrostim.amp) 
@@ -439,6 +451,11 @@ h.xopen("midbalfcn.hoc")
 h('objref fihw')
 h('fihw = new FInitializeHandler(2, "midbal()")')
 
+# Initialize the spikeraster
+tvec = h.Vector()
+idvec = h.Vector()
+
+
 # run the simulation
 # if (batchflag==1):
 if (printflag>0):
@@ -451,24 +468,58 @@ else:
         print("Running serial regular run with tstop=",h.tstop)
     h.run()    
     # print out the results
-    netfcns.spikeout(cells,fstem,pc)
-    netfcns.vout(cells,results,fstem,pc)
+    spikeout = netfcns.spikeout(cells,fstem,pc)
+    vout = netfcns.vout(cells,results,fstem,pc)
 
 if (printflag>0):
     print( "** Finished running sim and printing results **")
 
+import fig9_patternrecall as fig9
 
+perf = fig9.calc_performance(simname,netfile,numCycles, network_scale)   
 
+data2save={'dt':h.dt, 'tstop':h.tstop, 'netfile':netfile, 'simname':simname, 'performance':perf, 'electrostim':electrostim, 'percentDeath':percentDeath, 'network_scale':network_scale}
 
 #%%
+import pickle
 
+# Save results in a pickle file:
+with open('pyresults/' + simname+'.pkl', 'w') as f:  # Python 3: open(..., 'wb')
+    pickle.dump((spikeout, vout, data2save), f)
+    
+#%%
 #################
 # PLOT RESULTS
 #################
+import matplotlib.pyplot as plt
+import fig9_patternrecall as fig9
+import fig10_Vtraces as fig10
 
 if (plotflag==1):
-    netfcns.spikeplot(cells,h.tstop,ntot)
-    netfcns.vplot(cells,results)
+    if 'cells' in locals():
+        netfcns.spikeplot(cells,h.tstop,ntot)
+        netfcns.vplot(cells,results)
+    else:
+        spks = np.loadtxt("{}_spt.dat".format(fstem),skiprows=1)
+        plt.figure()
+        plt.scatter(spks[:,0],spks[:,1],s=.1)
+        plt.xlabel("Time (ms)")
+        plt.ylabel("Neuron #")
+        plt.title("Spike Raster")
+        plt.show()
+
+        pvsoma = np.loadtxt("{}_pvsoma_0.dat".format(fstem),skiprows=1)
+        plt.figure()
+        plt.plot(pvsoma[:,0],pvsoma[:,1])
+        plt.xlabel("Time (ms)")
+        plt.ylabel("Membrane Potential (mV)")
+        plt.title("Pattern Pyramidal Cell")
+        plt.show()
+        
+    overall_performance=fig9.plot_results(simname,netfile,numCycles, network_scale)
+    fig10.plot_voltages(simname, 200, SIMDUR,h.dt)
+    print("overall_performance =",overall_performance)
+
     print( "** Finished plotting **")
 
 if usepar==1:
