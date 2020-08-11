@@ -14,6 +14,10 @@ usepar = 0
 printflag = 1
 cuelist = []
 
+# Initialize the spikeraster
+tvec = h.Vector()
+idvec = h.Vector()
+
 def connectcells(cells, ranlist, nclist, pop_by_name, post_type, pre_type, synstart, synend,npresyn,weight,delay, pc): # {local i, j, gid, nsyn, r  localobj syn, nc, rs, u
     # initialize the pseudorandom number generator
     ctcons=0
