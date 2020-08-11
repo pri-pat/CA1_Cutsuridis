@@ -421,8 +421,7 @@ def prun():
     if (pc.id()==0 and printflag>1):
         print("Parallel run is going to run till",h.tstop)
     pc.psolve(h.tstop);
-    netfcns.spikeout(cells,fstem,pc)
-    netfcns.vout(cells,results,fstem,pc)
+    pc.barrier()  # wait for all hosts to get to this point
 
 
 
@@ -461,12 +460,11 @@ if (pc.id()==0 and printflag>0):
 if usepar==1:
     prun() # run and print results
 else:
-    if (pc.id()==0 and printflag>0):
-        print("Running serial regular run with tstop=",h.tstop)
-    h.run()    
-    # print out the results
-    spikeout = netfcns.spikeout(cells,fstem,pc)
-    vout = netfcns.vout(cells,results,fstem,pc)
+    h.run() 
+    
+# print out the results
+spikeout = netfcns.spikeout(cells,fstem,pc)
+vout = netfcns.vout(cells,results,fstem,pc)
 
 if (pc.id()==0 and printflag>0):
     print( "** Finished running sim and printing results **")
