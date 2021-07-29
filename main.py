@@ -7,7 +7,7 @@
 
 # Results reported in V. Cutsuridis, S. Cobb and B.P. Graham,
 # "Encoding and retrieval in a model of the hippocampal CA1 microcircuit",
-# Hippocampus, in press, DOI 10.1002/hipo.20661, 2009.
+# Hippocampus, DOI 10.1002/hipo.20661, 2009.
 
 #%%
 #################
@@ -40,11 +40,11 @@ printflag = 1 # 0: almost silent, 1: some prints, 2: many prints
 netfcns.printflag = printflag
 
 # Set default values for parameters that can be passed in at the command line
-plotflag = 0
-network_scale = 1 # set to 1 for full scale or 0.2 for a quick test with a small network
+plotflag = 1
+network_scale = .2 # set to 1 for full scale or 0.2 for a quick test with a small network
 scaleEScon = 1 # scaling factor for number of excitatory connections in the network, should be set to 1
 
-numCycles = 8
+numCycles = 2 # set to 2 for a short test network or 8 for a full simulation
 simname="par"
 connect_random_low_start_ = 1  # low seed for mcell_ran4_init()
 
@@ -127,13 +127,16 @@ for p in poplist:
 cells = []
 ranlist = []
 nclist = []
+
 h('{load_file("ranstream.hoc")}')  # to give each cell its own sequence generator
 h('{load_file("netparmpi.hoc")}')  # to give each cell its own sequence generator
 
+h.nrnmpi_init() 
 pnm = h.ParallelNetManager(ncell)	# Set up a parallel net manager for all the cells
 pc = pnm.pc # Even if running serially, we can create and use this
                          # in serial, pc.nhost == 1
-pnm.round_robin()					#Incorporate all processors - cells 0 through ncell-1
+pc.gid_clear() # If rerunning code, clear old assignments (in case network size got changed)
+pnm.round_robin() #Incorporate all processors - cells 0 through ncell-1
 
 
 if (pc.id()==0 and printflag>0):
@@ -374,7 +377,7 @@ for x in range(num2pick):
         
     deadlist.append(tmpvar)
 
-if (pc.id()==0):
+if (pc.id()==0 and percentDeath>0):
     print("List of cells that died:")
 list_clamps=[]
 for cell2kill in deadlist:
@@ -482,10 +485,11 @@ data2save={'dt':h.dt, 'tstop':h.tstop, 'netfile':netfile, 'simname':simname, 'pe
 # with open('pyresults/' + simname+'.pkl', 'w') as f:  # Python 3: open(..., 'wb')
 #     pickle.dump((spikeout, vout, data2save), f)
 
-with open('pyresults/' + simname+'_performance.txt', 'w') as f:  # Python 3: open(..., 'wb')
-    f.write("{:.3f}\n".format(perf))
-    f.write("{:.3f}\n".format(electrostim))
-    f.write("{:.3f}\n".format(percentDeath))
+if perf is not None:
+    with open('pyresults/' + simname+'_performance.txt', 'w') as f:  # Python 3: open(..., 'wb')
+        f.write("{:.3f}\n".format(perf))
+        f.write("{:.3f}\n".format(electrostim))
+        f.write("{:.3f}\n".format(percentDeath))
   
 #%%
 #################
@@ -526,5 +530,5 @@ if usepar==1:
     pc.gid_clear()
     pc.runworker()
     pc.done()
-    # h.quit()
+    h.quit()
     # quit()

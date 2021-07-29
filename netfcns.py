@@ -353,11 +353,15 @@ def spikeout(cells,fstem,pc):
 
     return (tvec, idvec)
 
-def vout(cells,results,fstem, pc):  
-    for key in results:
-        with open("{}_{}.dat".format(fstem, key), 'w') as f:
-            for i,v in enumerate(results[key]):
-                f.write("{:.3f}\t{:.2f}\n".format(i*h.dt,v))
+def vout(cells,results,fstem, pc): 
+    pc.barrier()
+    for rank in range(pc.nhost()):
+        if rank==pc.id():
+            for key in results:
+                with open("{}_{}.dat".format(fstem, key), 'w') as f:
+                    for i,v in enumerate(results[key]):
+                        f.write("{:.3f}\t{:.2f}\n".format(i*h.dt,v))
+        pc.barrier()
 
     return results
 

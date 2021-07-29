@@ -10,7 +10,7 @@ numCycles=8
 
 def plot_results(simname,netfile='N100S20P5',NUMCYCLES=numCycles, scaleDown=1):    
     #NCELL = 235-(1-scaleDown)*230  # number of cells (neurons); CA3, EC, SEP Pyr can be scaled down (230)
-    NPCELL = 100*scaleDown # number of PC (output) cells
+    NPCELL = int(100*scaleDown) # number of PC (output) cells
     #SPATT = 20*scaleDown   # number of active cells per pattern
     
     
@@ -109,7 +109,7 @@ def plot_results(simname,netfile='N100S20P5',NUMCYCLES=numCycles, scaleDown=1):
     
     plt.subplot(4,1,3)
     #hold on
-    plt.plot(ti, nc, 'k-', LineWidth=1) # spike counts
+    plt.plot(ti, nc, 'k-', linewidth =1) # spike counts
     plt.title('(c) Pyramidal cell spike count')
     plt.ylabel('Spike\nCount')
     plt.xlim([STIME, ETIME])
@@ -120,7 +120,7 @@ def plot_results(simname,netfile='N100S20P5',NUMCYCLES=numCycles, scaleDown=1):
     
     plt.subplot(4,1,4)
     #hold on
-    plt.plot(ti, co, 'k-', LineWidth=1) # recall quality
+    plt.plot(ti, co, 'k-', linewidth =1) # recall quality
     plt.title('(d) Recall quality')
     plt.ylabel('Recall\nQuality')
     plt.xlabel('Time (msecs)')
@@ -136,8 +136,8 @@ def plot_results(simname,netfile='N100S20P5',NUMCYCLES=numCycles, scaleDown=1):
 
 def calc_performance(simname,netfile='N100S20P5',NUMCYCLES=numCycles, scaleDown=1):    
     #NCELL = 235-(1-scaleDown)*230  # number of cells (neurons); CA3, EC, SEP Pyr can be scaled down (230)
-    NPCELL = 100*scaleDown # number of PC (output) cells
-    #SPATT = 20*scaleDown   # number of active cells per pattern
+    NPCELL = int(100*scaleDown) # number of PC (output) cells
+    #SPATT = int(20*scaleDown)   # number of active cells per pattern
     
     
     if scaleDown<1:
@@ -156,6 +156,10 @@ def calc_performance(simname,netfile='N100S20P5',NUMCYCLES=numCycles, scaleDown=
     
     FSPIKE = r'pyresults/{}_spt.dat'.format(simname)   # spikes file
     sp = np.loadtxt(FSPIKE,skiprows=1)  # load spike times
+    if sp.shape==(0,):
+        print('No spikes to analyze!')
+        return
+
     st = sp[:,0]       # extract times
     cell = sp[:,1]     # extract corresponding cell indices
     # extract PC spiking
