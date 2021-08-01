@@ -16,48 +16,18 @@ Then, in the directory of the model code, compile the *.mod mechanisms by runnin
 * On Mac and Linux, run `nrnivmodl`
 
 ## Running the Code
-The code can be run either via Python (with NEURON as a module) or stand-alone NEURON. When running the code via Python, command line arguments can be passed in to control the behavior of the model and also to alter specific parameters of the model.
+The code can be run from within Spyder or via Anaconda Prompt if you want to run in parallel.
 
-###### NEURON+Python
-To run the code from Python, use the AddPy branch:
-```
-git checkout AddPy
-```
+In Spyder, simply run the `main.py` file.  It will run slowly, in serial, and plot at the end.
 
-When using Python to run the code, up to five command line arguments can be specified:
-* **simname:** a unique name for the simulation; results files will be prefixed with this name
-* **batchflag:** 1 or 0; 1=run the simulation in batch mode; write results to file and don't open the NEURON GUI interface.
-* **plotflag:** 1 or 0; 1=create and display plots of results
-* **scaleDown:** 1 or 0; 1=scale the model down to 1% of its original size, just for testing and debugging purposes
-* **scaleEScon:** 1 or 0; 1=scale connections down as well, to speed up simulation time for testing and debugging purposes
+If using Anaconda Prompt, first find out how many cores your computer has, then launch an Anaconda Prompt from the Anaconda application folder. Change directory (cd) to the CA1_Cutsuridis folder and then enter at the command line (replacing 4 with however many cores your computer has):
+`mpiexec -n 4 python main.py`
 
-To run a model with the name "2ndrun" that only creates output files and no plots, enter:
+After the code has finished running, it may open plots and hang (if you have plotflag=1). You can turn of plotting or kill the process if that happens. The results will still exist. To plot from within Spyder after running using Anaconda Prompt, simply open Spyder, change the working directory to the CA1_Cutsuridis folder, and then at the console enter:
+`import plotfcns
+plotfcns.plotresults(simname)`
 
-```
-python -i HAM_StoRec_ser_trblsht.py "2ndrun" 1 0
-```
-
-To run a model that creates output files and plots, enter:
-
-```
-python -i HAM_StoRec_ser_trblsht.py "2ndrun" 1 1
-```
-
-To run a model that brings up the NEURON RunControl GUI and lets you click the Init & Run button, enter:
-
-```
-python -i HAM_StoRec_ser_trblsht.py "2ndrun" 0 0
-```
-
-
-###### NEURON
-
-To use stand-alone NEURON to run the code, in a terminal enter:
-
-```
-nrngui HAM_StoRec_ser.hoc
-```
-
+And your plots should appear. Note: this will work for simulations performed with this version of code going forward. If you need to plot old simulations, talk to me as the previous versions of the code didn't write out a parameter file used by this new plotting code.
 
 ## Model Background
 
@@ -73,11 +43,7 @@ It has been proposed that the hippocampal theta rhythm (4-7 Hz) can contribute t
 interneurons: basket (B) cells, axo-axonic (AA) cells, bistratified (BS) cells and oriens lacunosum-molecurale (OLM) cells. Inputs to the network come from the entorhinal cortex (EC), the CA3 Schaffer collaterals and medial septum. The EC input provides the sensory information, whereas all other inputs provide context and timing information. Storage is accomplished via a local STDP mediated hetero-association of the EC input pattern and the incoming CA3 input pattern on the pyramidal cell target synapses. The model simulates the timing of firing of
 different hippocampal cell types relative to the theta rhythm in anaesthetized animals and proposes experimentally confirmed functional roles for the different classes of inhibitory interneurons in the storage and recall cycles (Klausberger et al., 2003, 2004). Measures of recall performance of new and previously stored input patterns in the presence or absence of various inhibitory interneurons are employed to quantitatively test the performance of our model. Finally, the mean recall quality of the CA1 microcircuit is tested as the number of stored patterns is increased.
 
-Main file: 
-* [HAM_StoRec_par.hoc (parallel version)](HAM_StoRec_par.hoc)
-* [HAM_StoRec_ser.hoc (serial version - VERY SLOW!)](HAM_StoRec_ser.hoc)
-
-These files are configured to produce the results presented in figures 9 and 10 of the paper, showing recall of a stored pattern when the entorhinal cortex input is disconnected from the CA1 pyramidal cells and so pattern recall is cued  exclusively by CA3 Schaffer collateral input. Example results are in the Results directory, in which there are also Matlab files for plotting them. EC input can be restored by setting ECWGT to its non-zero value. Other results were produced by setting particular connection weight variables to 0 to remove certain synaptic pathways.
+This program is configured to produce the results presented in figures 9 and 10 of the paper, showing recall of a stored pattern when the entorhinal cortex input is disconnected from the CA1 pyramidal cells and so pattern recall is cued  exclusively by CA3 Schaffer collateral input. Example results are in the Results directory. EC input can be restored by setting ECWGT to its non-zero value. Other results were produced by setting particular connection weight variables to 0 to remove certain synaptic pathways.
 
 *__Note: Bug report, V. Cutsuridis and B. Graham, 21 Apr 2015:__
 We have been informed of a bug in the IA mod file, used for the OLM interneuron first introduced in ModelDB ac. 28316. Simulations (those for Figs.9 and 10) were thus rerun with the bug fixed. There are small quantitative differences from the published results, but the model still works as described. To reproduce the published results, comment out the "rates(v)" line in the DERIVATIVE block of IA.mod.*
