@@ -1,7 +1,7 @@
 objref p
 
 p = new PythonObject()
-{printf("userpar=%g ", p.usepar)}
+{printf("usepar=%g ", p.usepar)}
 
 proc midbal() {local wt, thisstep
 	wt = startsw()	// Get current time

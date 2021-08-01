@@ -23,6 +23,7 @@ import sys
 import importlib
 import netfcns
 from model import cellClasses
+import pickle
 
 h.load_file("stdrun.hoc")
 h.load_file("nrngui.hoc") # load_file
@@ -40,12 +41,12 @@ printflag = 1 # 0: almost silent, 1: some prints, 2: many prints
 netfcns.printflag = printflag
 
 # Set default values for parameters that can be passed in at the command line
-plotflag = 1
-network_scale = .2 # set to 1 for full scale or 0.2 for a quick test with a small network
+plotflag = 0
+network_scale = 1 # set to 1 for full scale or 0.2 for a quick test with a small network
 scaleEScon = 1 # scaling factor for number of excitatory connections in the network, should be set to 1
 
-numCycles = 2 # set to 2 for a short test network or 8 for a full simulation
-simname="par"
+numCycles = 6 # set to 2 for a short test network or 8 for a full simulation
+simname="guitar"
 connect_random_low_start_ = 1  # low seed for mcell_ran4_init()
 
 netfile = 'N100S20P5'
@@ -91,6 +92,24 @@ SIMDUR = STARTDEL + (THETA*numCycles)    # simulation duration (msecs)
 
 h.tstop =  SIMDUR
 h.celsius = 34
+
+
+# Save parameters to file:
+    
+params = {"simname":simname,
+          "netfile":netfile,
+          "numCycles":numCycles,
+          "network_scale":network_scale,
+          "SIMDUR":SIMDUR,
+          "dt":h.dt,
+          "connect_random_low_start_": connect_random_low_start_,
+          "scaleEScon": scaleEScon,
+          "electrostim": electrostim,
+          "percentDeath": percentDeath}
+
+with open('pyresults/' + simname + '.pickle', 'wb') as f:
+    pickle.dump(params, f, pickle.HIGHEST_PROTOCOL)
+
 
 #%%
 
@@ -140,7 +159,7 @@ pnm.round_robin() #Incorporate all processors - cells 0 through ncell-1
 
 
 if (pc.id()==0 and printflag>0):
-    print("simname = {} will run for {} ms, results will be in {}/*.dat".format(simname, SIMDUR, fstem))
+    print("simname = {} will run for {} ms, results will be in {}_*.dat".format(simname, SIMDUR, fstem))
 
 # Set GID ranges of cells and Load Cell Class definitions
 pop_by_name={}
@@ -495,40 +514,17 @@ if perf is not None:
 #################
 # PLOT RESULTS
 #################
-import matplotlib.pyplot as plt
-import fig9_patternrecall as fig9
-import fig10_Vtraces as fig10
+import plotfcns as pf
 
-if (plotflag==1):
-    if 'cells' in locals():
-        netfcns.spikeplot(cells,h.tstop,ntot)
-        netfcns.vplot(cells,results)
-    else:
-        spks = np.loadtxt("{}_spt.dat".format(fstem),skiprows=1)
-        plt.figure()
-        plt.scatter(spks[:,0],spks[:,1],s=.1)
-        plt.xlabel("Time (ms)")
-        plt.ylabel("Neuron #")
-        plt.title("Spike Raster")
-        plt.show()
+pf.plotresults(params)
 
-        pvsoma = np.loadtxt("{}_pvsoma_0.dat".format(fstem),skiprows=1)
-        plt.figure()
-        plt.plot(pvsoma[:,0],pvsoma[:,1])
-        plt.xlabel("Time (ms)")
-        plt.ylabel("Membrane Potential (mV)")
-        plt.title("Pattern Pyramidal Cell")
-        plt.show()
-        
-    overall_performance=fig9.plot_results(simname,netfile,numCycles, network_scale)
-    fig10.plot_voltages(simname, 200, SIMDUR,h.dt)
-    print("overall_performance =",overall_performance)
+    # if 'cells' in locals():
+    #     netfcns.spikeplot(cells,h.tstop,ntot)
+    #     netfcns.vplot(cells,results)
 
-    print( "** Finished plotting **")
-
-if usepar==1:
+if usepar==1 and pc.nhost()>1:
     pc.gid_clear()
     pc.runworker()
     pc.done()
     h.quit()
-    # quit()
+    quit()
