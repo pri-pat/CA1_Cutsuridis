@@ -223,6 +223,31 @@ netfcns.mkinputs(cells, ranlist, pop_by_name, pc)
 
 #%%
 
+#%%
+#################################
+# CREATE IMAGINED/COMBINED MEMORY
+#################################
+import numpy as np
+
+def combine_and_save(fname):
+    numpatt = int(str(fname)[-1])
+    realmem = ""
+    
+    #open and read memory
+    realmem = np.loadtxt("Weights/patts" + fname + ".dat") 
+    
+    for i in range(numpatt):
+        if i == 0:
+            comb_mem = realmem[:,0].copy() 
+        else:
+            comb_mem[i*(100//numpatt):] = (realmem[:,i])[100//numpatt:]
+    
+    np.savetxt(fname + "combined.dat", comb_mem, fmt="%d", delimiter=" ")
+
+
+combine_and_save(netfile)
+
+#%%
 #################
 # SET STORAGE AND RECALL FUNCTIONALITY
 #################
