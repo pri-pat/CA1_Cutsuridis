@@ -57,7 +57,7 @@ printflag = 1 # 0: almost silent, 1: some prints, 2: many prints
 netfcns.printflag = printflag
 
 # Set default values for parameters that can be passed in at the command line
-plotflag = 0
+plotflag = 1
 network_scale = 1 # set to 1 for full scale or 0.2 for a quick test with a small network
 scaleEScon = 1 # scaling factor for number of excitatory connections in the network, should be set to 1
 
@@ -509,7 +509,8 @@ data2save={'dt':h.dt, 'tstop':h.tstop, 'netfile':netfile, 'simname':simname, 'pe
 
 if perf is not None:
     with open('pyresults/' + simname+'_performance.txt', 'w') as f:  # Python 3: open(..., 'wb')
-        f.write("{:.3f}\n".format(perf))
+        for p in perf:
+            f.write("{:.3f}\n".format(p))
         f.write("{:.3f}\n".format(electrostim))
         f.write("{:.3f}\n".format(percentDeath))
   

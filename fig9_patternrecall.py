@@ -134,7 +134,7 @@ def plot_results(simname,netfile='N100S20P5',NUMCYCLES=numCycles, scaleDown=1):
 
     return co[co>0].mean()
 
-def calc_performance(simname,netfile='N100S20P5',NUMCYCLES=numCycles, scaleDown=1):    
+def calc_performance(simname,netfile,NUMCYCLES=numCycles, scaleDown=1):    
     #NCELL = 235-(1-scaleDown)*230  # number of cells (neurons); CA3, EC, SEP Pyr can be scaled down (230)
     NPCELL = int(100*scaleDown) # number of PC (output) cells
     #SPATT = int(20*scaleDown)   # number of active cells per pattern
