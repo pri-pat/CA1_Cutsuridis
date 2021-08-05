@@ -6,3 +6,6 @@ syntax:glob
 *.dll
 Results/*
 pyresults/*
+*.png
+*.tmp
+*.pickle
