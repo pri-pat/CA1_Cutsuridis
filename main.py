@@ -28,6 +28,23 @@ h.load_file("stdrun.hoc")
 h.load_file("nrngui.hoc") # load_file
 
 #%%
+#################################
+# CREATE IMAGINED/COMBINED MEMORY
+#################################
+from combine_and_save import combine_and_save
+
+netfile = "N100S20P5"
+
+make_combined=1 # make a confusing input for the model
+
+netfileActual = netfile
+
+if make_combined==1:
+    combined_mem = combine_and_save(netfile)
+    netfile+="combined"
+    np.savetxt(netfile+".dat", combined_mem, fmt="%d", delimiter=" ")
+
+#%%
 
 #################
 # PARAMETERS
@@ -40,7 +57,7 @@ printflag = 1 # 0: almost silent, 1: some prints, 2: many prints
 netfcns.printflag = printflag
 
 # Set default values for parameters that can be passed in at the command line
-plotflag = 1
+plotflag = 0
 network_scale = 1 # set to 1 for full scale or 0.2 for a quick test with a small network
 scaleEScon = 1 # scaling factor for number of excitatory connections in the network, should be set to 1
 
@@ -203,33 +220,6 @@ pc.barrier() # wait for all cores to get to this point before continuing
 netfcns.mkinputs(cells, ranlist, pop_by_name, pc)
 
 #%%
-#################################
-# CREATE IMAGINED/COMBINED MEMORY
-#################################
-import numpy as np
-
-def combine_and_save(fname):
-    numpatt = int(str(fname)[-1])
-    realmem = ""
-    
-    #open and read memory
-    realmem = np.loadtxt("Weights/patts" + fname + ".dat") 
-    chunklen = 100//numpatt
-    
-    for i in range(numpatt):
-        if i == 0:
-            comb_mem = realmem[:,0].copy() 
-        else:
-            start = i* chunklen
-            stop = (i + 1)* chunklen
-            comb_mem[start:stop] = (realmem[:,i])[start:stop]
-    
-    np.savetxt(fname + "combined.dat", comb_mem, fmt="%d", delimiter=" ")
-
-netfile = "N100S20P5"
-combine_and_save(netfile)
-
-#%%
 
 #################
 # SET STORAGE AND RECALL FUNCTIONALITY
@@ -252,7 +242,7 @@ CFRAC = 1    # fraction of active cells in cue
 # (cue and EC patterns taken from FSTORE file to implement storage)
 # (use same file for FPATT and FSTORE to test recall only)
 if network_scale==1:
-    FCONN = "Weights/wgts"+netfile+".dat" #"Weights/wgtsN100S20P5.dat"
+    FCONN = "Weights/wgts"+netfileActual+".dat" #"Weights/wgtsN100S20P5.dat"
     FPATT = "Weights/patts"+netfile+".dat"    # "Weights/pattsN100S20P5.dat"    # already stored patterns
     FSTORE = "Weights/patts"+netfile+".dat"    # "Weights/pattsN100S20P5.dat"    # new patterns to store
 else:
@@ -506,7 +496,7 @@ if (pc.id()==0 and printflag>0):
 
 import fig9_patternrecall as fig9
 
-perf = fig9.calc_performance(simname,netfile,numCycles, network_scale)   
+perf = fig9.calc_performance(simname,netfileActual,numCycles, network_scale)   
 
 data2save={'dt':h.dt, 'tstop':h.tstop, 'netfile':netfile, 'simname':simname, 'performance':perf, 'electrostim':electrostim, 'percentDeath':percentDeath, 'network_scale':network_scale}
 
