@@ -58,6 +58,7 @@ netfcns.printflag = printflag
 
 # Set default values for parameters that can be passed in at the command line
 plotflag = 1
+perfflag = 0 #perfflag = 0, compare to combined; perfflag = 1, compare to real
 network_scale = 1 # set to 1 for full scale or 0.2 for a quick test with a small network
 scaleEScon = 1 # scaling factor for number of excitatory connections in the network, should be set to 1
 
@@ -496,7 +497,11 @@ if (pc.id()==0 and printflag>0):
 
 import fig9_patternrecall as fig9
 
-perf = fig9.calc_performance(simname,netfileActual,numCycles, network_scale)   
+if perfflag == 0:
+    perf = fig9.calc_performance(simname,netfile,numCycles, network_scale)   
+if perfflag == 1:
+    perf = fig9.calc_performance(simname,netfileActual,numCycles, network_scale)   
+
 
 data2save={'dt':h.dt, 'tstop':h.tstop, 'netfile':netfile, 'simname':simname, 'performance':perf, 'electrostim':electrostim, 'percentDeath':percentDeath, 'network_scale':network_scale}
 
@@ -508,11 +513,14 @@ data2save={'dt':h.dt, 'tstop':h.tstop, 'netfile':netfile, 'simname':simname, 'pe
 #     pickle.dump((spikeout, vout, data2save), f)
 
 if perf is not None:
-    with open('pyresults/' + simname+'_performance.txt', 'w') as f:  # Python 3: open(..., 'wb')
-        for p in perf:
-            f.write("{:.3f}\n".format(p))
-        f.write("{:.3f}\n".format(electrostim))
-        f.write("{:.3f}\n".format(percentDeath))
+    with open('pyresults/CombinedResults' + simname+netfile+'_performance.dat', 'w') as f:  # Python 3: open(..., 'wb')
+        if perfflag == 0:   
+            f.write("{:.3f}\n".format(perf[0]))
+        if perfflag == 1:
+            for p in perf:
+                f.write("{:.3f}\n".format(p))
+            f.write("{:.3f}\n".format(electrostim))
+            f.write("{:.3f}\n".format(percentDeath))
   
 #%%
 #################
