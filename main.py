@@ -509,15 +509,19 @@ data2save={'dt':h.dt, 'tstop':h.tstop, 'netfile':netfile, 'simname':simname, 'co
 # # Save results in a pickle file:
 # with open('pyresults/' + simname+'.pkl', 'w') as f:  # Python 3: open(..., 'wb')
 #     pickle.dump((spikeout, vout, data2save), f)
+import os
+
+fname = 'pyresults/OurResults/' + simname+'_combinedperformance.dat'
+path=os.path.abspath(fname)
 
 if perf_comb is not None:
-    with open('pyresults/OurResults/' + simname+'_combinedperformance.dat', 'a') as f:  # Python 3: open(..., 'wb')
+    with open(path, 'a') as f:  # Python 3: open(..., 'wb')
         comb_results = {}
         comb_results["numpattt"]=perf_comb
         
         #f.write("{:.3f}\n".format(perf_comb[0]))
 if perf_real is not None:
-    with open('pyresults/OurResults/' + simname+netfile+'_realperformance.dat') as f:  # Python 3: open(..., 'wb')            for p in perf:
+    with open('pyresults/OurResults/' + simname+netfile+'_realperformance.dat', "w") as f:  # Python 3: open(..., 'wb')            for p in perf:
         for p in perf_real:
             real_results = []
             real_results.append(p)
