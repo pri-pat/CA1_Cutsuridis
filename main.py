@@ -49,6 +49,7 @@ if make_combined==1:
 #################
 # PARAMETERS
 #################
+numpatt = int(netfileActual[-1]) 
 keepoldtypo=0 # rerun the old version of the code, including typos
 cellClasses.keepoldtypo = keepoldtypo
 usepar = 1
@@ -57,7 +58,7 @@ printflag = 1 # 0: almost silent, 1: some prints, 2: many prints
 netfcns.printflag = printflag
 
 # Set default values for parameters that can be passed in at the command line
-plotflag = 1
+plotflag = 0
 network_scale = 1 # set to 1 for full scale or 0.2 for a quick test with a small network
 scaleEScon = 1 # scaling factor for number of excitatory connections in the network, should be set to 1
 
@@ -496,9 +497,11 @@ if (pc.id()==0 and printflag>0):
 
 import fig9_patternrecall as fig9
 
-perf = fig9.calc_performance(simname,netfileActual,numCycles, network_scale)   
+perf_comb = fig9.calc_performance(simname,netfile,numCycles, network_scale)   
+perf_real = fig9.calc_performance(simname,netfileActual,numCycles, network_scale)   
 
-data2save={'dt':h.dt, 'tstop':h.tstop, 'netfile':netfile, 'simname':simname, 'performance':perf, 'electrostim':electrostim, 'percentDeath':percentDeath, 'network_scale':network_scale}
+
+data2save={'dt':h.dt, 'tstop':h.tstop, 'netfile':netfile, 'simname':simname, 'combinedperformance':perf_comb, 'realperformance':perf_real, 'electrostim':electrostim, 'percentDeath':percentDeath, 'network_scale':network_scale}
 
 #%%
 # import pickle
@@ -506,13 +509,24 @@ data2save={'dt':h.dt, 'tstop':h.tstop, 'netfile':netfile, 'simname':simname, 'pe
 # # Save results in a pickle file:
 # with open('pyresults/' + simname+'.pkl', 'w') as f:  # Python 3: open(..., 'wb')
 #     pickle.dump((spikeout, vout, data2save), f)
+import os
 
-if perf is not None:
-    with open('pyresults/' + simname+'_performance.txt', 'w') as f:  # Python 3: open(..., 'wb')
-        for p in perf:
-            f.write("{:.3f}\n".format(p))
-        f.write("{:.3f}\n".format(electrostim))
-        f.write("{:.3f}\n".format(percentDeath))
+fname = 'pyresults/OurResults/' + simname+'_combinedperformance.dat'
+path=os.path.abspath(fname)
+
+if perf_comb is not None:
+    with open(path, 'a') as f:  # Python 3: open(..., 'wb')
+        comb_results = {}
+        comb_results["numpattt"]=perf_comb
+        
+        #f.write("{:.3f}\n".format(perf_comb[0]))
+if perf_real is not None:
+    with open('pyresults/OurResults/' + simname+netfile+'_realperformance.dat', "w") as f:  # Python 3: open(..., 'wb')            for p in perf:
+        for p in perf_real:
+            real_results = []
+            real_results.append(p)
+       # f.write("{:.3f}\n".format(electrostim))
+        #f.write("{:.3f}\n".format(percentDeath))
   
 #%%
 #################
