@@ -41,8 +41,8 @@ netfileActual = netfile
 
 if make_combined==1:
     combined_mem = combine_and_save(netfile)
-    netfile+="combined"
-    np.savetxt(netfile+".dat", combined_mem, fmt="%d", delimiter=" ")
+    netfile +="combined"
+    np.savetxt('Weights/' + netfile+".dat", combined_mem, fmt="%d", delimiter=" ")
 
 #%%
 
@@ -517,8 +517,8 @@ path=os.path.abspath(fname)
 if perf_comb is not None: #writes file with XXXXXX
     #comb_results = []
     with open(path, 'a') as f:  # Python 3: open(..., 'wb')
-        f.write('number of patterns: ' + perf_comb[0] + '\n')
-    
+        f.write(str(perf_comb[0]))
+        f.write('\n')
         #comb_results.append(perf_comb)
         #data = np.array(comb_results)
        # comb_results_array = np.array(data) #saves dictionary of number of memory patterns (key) and corresponding perf_comb value
@@ -529,7 +529,8 @@ if perf_comb is not None: #writes file with XXXXXX
 if perf_real is not None: #writes file with XXXX
     #real_results = np.array([])
     with open('pyresults/OurResults/' + simname+netfile+'_realperformance.dat', "w") as f:  # Python 3: open(..., 'wb')            for p in perf:        
-        f.write(perf_real)
+        f.write(str(perf_real))
+        f.write('\n')
         
         #for p in perf_real:
          #   np.append(real_results, p)
