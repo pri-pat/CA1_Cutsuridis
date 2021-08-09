@@ -58,7 +58,7 @@ printflag = 1 # 0: almost silent, 1: some prints, 2: many prints
 netfcns.printflag = printflag
 
 # Set default values for parameters that can be passed in at the command line
-plotflag = 0
+plotflag = 1
 network_scale = 1 # set to 1 for full scale or 0.2 for a quick test with a small network
 scaleEScon = 1 # scaling factor for number of excitatory connections in the network, should be set to 1
 
@@ -514,17 +514,28 @@ import os
 fname = 'pyresults/OurResults/' + simname+'_combinedperformance.dat'
 path=os.path.abspath(fname)
 
-if perf_comb is not None:
+if perf_comb is not None: #writes file with XXXXXX
+    #comb_results = []
     with open(path, 'a') as f:  # Python 3: open(..., 'wb')
-        comb_results = {}
-        comb_results["numpattt"]=perf_comb
+        f.write('number of patterns: ' + perf_comb[0] + '\n')
+    
+        #comb_results.append(perf_comb)
+        #data = np.array(comb_results)
+       # comb_results_array = np.array(data) #saves dictionary of number of memory patterns (key) and corresponding perf_comb value
+       # np.savetxt(f, data)
         
         #f.write("{:.3f}\n".format(perf_comb[0]))
-if perf_real is not None:
-    with open('pyresults/OurResults/' + simname+netfile+'_realperformance.dat', "w") as f:  # Python 3: open(..., 'wb')            for p in perf:
-        for p in perf_real:
-            real_results = []
-            real_results.append(p)
+        
+if perf_real is not None: #writes file with XXXX
+    #real_results = np.array([])
+    with open('pyresults/OurResults/' + simname+netfile+'_realperformance.dat', "w") as f:  # Python 3: open(..., 'wb')            for p in perf:        
+        f.write(perf_real)
+        
+        #for p in perf_real:
+         #   np.append(real_results, p)
+            
+        #np.savetxt(f, real_results) #saves array of real_results to file 
+        
        # f.write("{:.3f}\n".format(electrostim))
         #f.write("{:.3f}\n".format(percentDeath))
   
@@ -537,12 +548,13 @@ import fig9_patternrecall as fig9
 import fig10_Vtraces as fig10
 
 if (plotflag==1):
-    if 'cells' in locals():
+   """ if 'cells' in locals():
         netfcns.spikeplot(cells,h.tstop,ntot)
         netfcns.vplot(cells,results)
     else:
         spks = np.loadtxt("{}_spt.dat".format(fstem),skiprows=1)
         plt.figure()
+        plt.rcParams["figure.figsize"] = (8,8)
         plt.scatter(spks[:,0],spks[:,1],s=.1)
         plt.xlabel("Time (ms)")
         plt.ylabel("Neuron #")
@@ -551,17 +563,18 @@ if (plotflag==1):
 
         pvsoma = np.loadtxt("{}_pvsoma_0.dat".format(fstem),skiprows=1)
         plt.figure()
+        plt.rcParams["figure.figsize"] = (8,8)
         plt.plot(pvsoma[:,0],pvsoma[:,1])
         plt.xlabel("Time (ms)")
         plt.ylabel("Membrane Potential (mV)")
         plt.title("Pattern Pyramidal Cell")
         plt.show()
-        
-    overall_performance=fig9.plot_results(simname,netfile,numCycles, network_scale)
-    fig10.plot_voltages(simname, 200, SIMDUR,h.dt)
-    print("overall_performance =",overall_performance)
+"""    
+overall_performance=fig9.plot_results(simname,netfile,numCycles, network_scale)
+fig10.plot_voltages(simname, 200, SIMDUR,h.dt)
+print("overall_performance =",overall_performance)
 
-    print( "** Finished plotting **")
+print( "** Finished plotting **")
 
 if usepar==1:
     pc.gid_clear()

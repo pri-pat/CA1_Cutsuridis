@@ -90,7 +90,7 @@ def plot_results(simname,netfile,NUMCYCLES=numCycles, scaleDown=1):
     lw=2
     plt.subplots_adjust(hspace=.5)
     plt.subplot(4,1,1)
-    plt.plot(sp[:,0], sp[:,1], 'k.', marker='.', ms=.5)   # raster plot of Sep, EC & CA3 spiking
+    plt.plot(sp[:,0], sp[:,1], 'k.', marker='.', markersize = .05)   # raster plot of Sep, EC & CA3 spiking
     plt.title(simname+' (Pattern #'+str(CPATT)+')\n(a) Input spikes')
     plt.ylabel('Input\nCell #')
     plt.xlim([STIME, ETIME])
