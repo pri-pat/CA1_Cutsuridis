@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 numCycles=8
 
-def plot_results(simname,netfile='N100S20P5',NUMCYCLES=numCycles, scaleDown=1):    
+def plot_results(simname,netfile,NUMCYCLES=numCycles, scaleDown=1):    
     #NCELL = 235-(1-scaleDown)*230  # number of cells (neurons); CA3, EC, SEP Pyr can be scaled down (230)
     NPCELL = int(100*scaleDown) # number of PC (output) cells
     #SPATT = 20*scaleDown   # number of active cells per pattern
@@ -19,7 +19,7 @@ def plot_results(simname,netfile='N100S20P5',NUMCYCLES=numCycles, scaleDown=1):
     else:
         FPATT = r'Weights/patts'+netfile+'.dat' # TODO: Replace with your full path to the file
         
-    #NPATT = 1   # number of patterns
+    NPATT = int(netfile[-1])   # number of patterns
     CPATT = 0  # index of cue pattern
     
     RTIME = 50+(250*NUMCYCLES)    # run time (msecs)
@@ -90,7 +90,7 @@ def plot_results(simname,netfile='N100S20P5',NUMCYCLES=numCycles, scaleDown=1):
     lw=2
     plt.subplots_adjust(hspace=.5)
     plt.subplot(4,1,1)
-    plt.plot(sp[:,0], sp[:,1], 'k.', marker='.', ms=.5)   # raster plot of Sep, EC & CA3 spiking
+    plt.plot(sp[:,0], sp[:,1], 'k.', marker='.', markersize = .05)   # raster plot of Sep, EC & CA3 spiking
     plt.title(simname+' (Pattern #'+str(CPATT)+')\n(a) Input spikes')
     plt.ylabel('Input\nCell #')
     plt.xlim([STIME, ETIME])
@@ -127,14 +127,14 @@ def plot_results(simname,netfile='N100S20P5',NUMCYCLES=numCycles, scaleDown=1):
     plt.xlim([STIME, ETIME])
     plt.ylim([0, 1.02])
     
-    plt.savefig("Images/{}.png".format(simname))
+    plt.savefig("Images/{}.png".format(netfile))
     plt.show()
     
     print("Overall performance metric for {}: {}".format(simname,co[co>0].mean()))
 
     return co[co>0].mean()
 
-def calc_performance(simname,netfile='N100S20P5',NUMCYCLES=numCycles, scaleDown=1):    
+def calc_performance(simname,netfile,NUMCYCLES=numCycles, scaleDown=1):    
     #NCELL = 235-(1-scaleDown)*230  # number of cells (neurons); CA3, EC, SEP Pyr can be scaled down (230)
     NPCELL = int(100*scaleDown) # number of PC (output) cells
     #SPATT = int(20*scaleDown)   # number of active cells per pattern
@@ -144,63 +144,68 @@ def calc_performance(simname,netfile='N100S20P5',NUMCYCLES=numCycles, scaleDown=
         FPATT = r'Weights/patts'+netfile+'Scaled.dat' # TODO: Replace with your full path to the file
     else:
         FPATT = r'Weights/patts'+netfile+'.dat' # TODO: Replace with your full path to the file
-        
-    #NPATT = 1   # number of patterns
+      
+    NPATT = int(netfile[-1])   # number of patterns
     CPATT = 0  # index of cue pattern
-    
-    RTIME = 50+(250*NUMCYCLES)    # run time (msecs)
-    
-    
-    patts = np.loadtxt(FPATT)   # load stored patterns
-    cue = patts[:,CPATT]   # extract cue pattern
-    
-    FSPIKE = r'pyresults/{}_spt.dat'.format(simname)   # spikes file
-    sp = np.loadtxt(FSPIKE,skiprows=1)  # load spike times
-    if sp.shape==(0,):
-        print('No spikes to analyze!')
-        return
-
-    st = sp[:,0]       # extract times
-    cell = sp[:,1]     # extract corresponding cell indices
-    # extract PC spiking
-    stp = [x for i, x in enumerate(st) if cell[i]<NPCELL ]
-    #stp = st(cell < NPCELL)
-    cellp = [x for i, x in enumerate(cell) if cell[i]<NPCELL ]
-    
-    #cellp = cell(cell < NPCELL)
-    
-    # Analyse spiking over time and compare with cue
-    DT = 1 # sliding time
-    #TW = 5    # width of sliding time window
-    TW = 10    # width of sliding time window
-    
-    ti = list(range(0,RTIME-TW,DT))
-    NW = len(ti)   # number of time windows
-    nc = np.zeros((NW,1))
-    ha = np.zeros((NW,1))
-    co = np.zeros((NW,1))
-    
-    for i in range(NW):
-        # TODO: Pythonize the matlab line below:
-        # rp = cellp(stp>=ti[i] & stp<ti[i]+TW) # active cells in sliding window
-        # My first attempt at the line above resulted in an IndexError: list index out of range:
-        rp = [cellp[z] for z,x in enumerate(stp) if (x>ti[i] and x<(ti[i]+TW))]  # active cells in sliding window
-    
-        nc[i] = len(rp)    # number of active cells in window
-    
-        p = np.zeros((NPCELL))
+    results=[]
+    for CPATT in range(NPATT):
+        RTIME = 50+(250*NUMCYCLES)    # run time (msecs)
         
-        for x in rp:
-            p[int(x)] = 1 #     p[rp+1,1] = 1  # recalled pattern
+        
+        patts = np.loadtxt(FPATT)   # load stored patterns
+        cue = patts[:,CPATT]   # extract cue pattern
+        
+        FSPIKE = r'pyresults/{}_spt.dat'.format(simname)   # spikes file
+        sp = np.loadtxt(FSPIKE,skiprows=1)  # load spike times
+        if sp.shape==(0,):
+            print('No spikes to analyze!')
+            return
+    
+        st = sp[:,0]       # extract times
+        cell = sp[:,1]     # extract corresponding cell indices
+        # extract PC spiking
+        stp = [x for i, x in enumerate(st) if cell[i]<NPCELL ]
+        #stp = st(cell < NPCELL)
+        cellp = [x for i, x in enumerate(cell) if cell[i]<NPCELL ]
+        
+        #cellp = cell(cell < NPCELL)
+        
+        # Analyse spiking over time and compare with cue
+        DT = 1 # sliding time
+        #TW = 5    # width of sliding time window
+        TW = 10    # width of sliding time window
+        
+        ti = list(range(0,RTIME-TW,DT))
+        NW = len(ti)   # number of time windows
+        nc = np.zeros((NW,1))
+        ha = np.zeros((NW,1))
+        co = np.zeros((NW,1))
+        
+        for i in range(NW):
+            # TODO: Pythonize the matlab line below:
+            # rp = cellp(stp>=ti[i] & stp<ti[i]+TW) # active cells in sliding window
+            # My first attempt at the line above resulted in an IndexError: list index out of range:
+            rp = [cellp[z] for z,x in enumerate(stp) if (x>ti[i] and x<(ti[i]+TW))]  # active cells in sliding window
+        
+            nc[i] = len(rp)    # number of active cells in window
+        
+            p = np.zeros((NPCELL))
             
-        ha[i] = (sum(p == cue)/NPCELL)  # hamming distance
-        mp = p.mean()   # mean pattern activity
-        # correlation (normalised dot product)
-        if mp == 0:
-            co[i] = 0
-        else:
-            # TODO check the next line to convert from MATLAB to Python syntax
-            co[i] = np.dot(p,cue)/math.sqrt(sum(p)*sum(cue))
-    
-    return co[co>0].mean()
-    
+            for x in rp:
+                p[int(x)] = 1 #     p[rp+1,1] = 1  # recalled pattern
+                
+            ha[i] = (sum(p == cue)/NPCELL)  # hamming distance
+            mp = p.mean()   # mean pattern activity
+            # correlation (normalised dot product)
+            if mp == 0:
+                co[i] = 0
+            else:
+                # TODO check the next line to convert from MATLAB to Python syntax
+                co[i] = np.dot(p,cue)/math.sqrt(sum(p)*sum(cue))
+        results.append(co[co>0].mean())
+    return results
+
+
+
+
+

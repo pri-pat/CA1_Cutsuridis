@@ -23,16 +23,22 @@ import sys
 import importlib
 import netfcns
 from model import cellClasses
-import pickle
 
 h.load_file("stdrun.hoc")
 h.load_file("nrngui.hoc") # load_file
 
+"""
+stims = [2, 5, 10, 20, 40]
+for stim in stims:
+    netfile = 'N100S20P' + str(stim) #param datafile with stim real memories
+"""    
+   
 #%%
 
 #################
 # PARAMETERS
 #################
+
 keepoldtypo=0 # rerun the old version of the code, including typos
 cellClasses.keepoldtypo = keepoldtypo
 usepar = 1
@@ -41,15 +47,18 @@ printflag = 1 # 0: almost silent, 1: some prints, 2: many prints
 netfcns.printflag = printflag
 
 # Set default values for parameters that can be passed in at the command line
-plotflag = 0
+plotflag = 1
 network_scale = 1 # set to 1 for full scale or 0.2 for a quick test with a small network
 scaleEScon = 1 # scaling factor for number of excitatory connections in the network, should be set to 1
 
-numCycles = 6 # set to 2 for a short test network or 8 for a full simulation
-simname="guitar"
+numCycles = 8 # set to 2 for a short test network or 8 for a full simulation
+simname="par"
 connect_random_low_start_ = 1  # low seed for mcell_ran4_init()
 
 netfile = 'N100S20P5'
+netfileActual = netfile
+numpatt = int(netfileActual[-1]) 
+
 electrostim = 0 # 0 = no stimulation, 1 = stimulation according to parameters set farther down in code
 percentDeath = .0 # fraction of pyramidal cells to kill off
 
@@ -93,22 +102,22 @@ SIMDUR = STARTDEL + (THETA*numCycles)    # simulation duration (msecs)
 h.tstop =  SIMDUR
 h.celsius = 34
 
+ #%%
+#################################
+# CREATE IMAGINED/COMBINED MEMORY
+#################################
+from combine_and_save import combine_and_save
 
-# Save parameters to file:
-    
-params = {"simname":simname,
-          "netfile":netfile,
-          "numCycles":numCycles,
-          "network_scale":network_scale,
-          "SIMDUR":SIMDUR,
-          "dt":h.dt,
-          "connect_random_low_start_": connect_random_low_start_,
-          "scaleEScon": scaleEScon,
-          "electrostim": electrostim,
-          "percentDeath": percentDeath}
+#netfile = "N100S20P5"
 
-with open('pyresults/' + simname + '.pickle', 'wb') as f:
-    pickle.dump(params, f, pickle.HIGHEST_PROTOCOL)
+make_combined=1 # make a confusing input for the model
+
+#netfileActual = netfile
+
+if make_combined==1:
+    combined_mem = combine_and_save(netfile)
+    netfile +="combined"
+    np.savetxt('Weights/patts' + netfile+".dat", combined_mem, fmt="%d", delimiter=" ")
 
 
 #%%
@@ -159,7 +168,7 @@ pnm.round_robin() #Incorporate all processors - cells 0 through ncell-1
 
 
 if (pc.id()==0 and printflag>0):
-    print("simname = {} will run for {} ms, results will be in {}_*.dat".format(simname, SIMDUR, fstem))
+    print("simname = {} will run for {} ms, results will be in {}/*.dat".format(simname, SIMDUR, fstem))
 
 # Set GID ranges of cells and Load Cell Class definitions
 pop_by_name={}
@@ -244,7 +253,7 @@ CFRAC = 1    # fraction of active cells in cue
 # (cue and EC patterns taken from FSTORE file to implement storage)
 # (use same file for FPATT and FSTORE to test recall only)
 if network_scale==1:
-    FCONN = "Weights/wgts"+netfile+".dat" #"Weights/wgtsN100S20P5.dat"
+    FCONN = "Weights/wgts"+netfileActual+".dat" #"Weights/wgtsN100S20P5.dat"
     FPATT = "Weights/patts"+netfile+".dat"    # "Weights/pattsN100S20P5.dat"    # already stored patterns
     FSTORE = "Weights/patts"+netfile+".dat"    # "Weights/pattsN100S20P5.dat"    # new patterns to store
 else:
@@ -344,7 +353,8 @@ connlist.append(popConn(popname="PyramidalCell", prepop="OLMCell", prenum=1, typ
 # In the original Cutsuridis code, this weight is set first to 0.01 and then overwritten a few lines later to 0.0.
 # The call to make this conection is commented out in hoc
 # connlist.append(popConn(popname="BasketCell",    prepop="OLMCell", prenum=1, type="GABAA", weight = OLMcell2Bcell_weight, delay = OLMcell2Bcell_delay, synst=II_OPP, synend=II_OPP)) # OLM_BC
-  
+
+
 h.mcell_ran4_init(connect_random_low_start_)
 nclist = []
 
@@ -356,7 +366,12 @@ for conn in connlist:
 
 #netfcns.mkinputs(cells, pop_by_name['CA3Cell'].gidst, pop_by_name['ECCell'].gidst, pop_by_name['SEPCell'].gidst, ntot, pop_by_name)
 # EC input to PCs
+FPATT = 'Weights/patts' + netfileActual + '.dat'
 ncelist = netfcns.connectEC(FPATT, ECPATT, NPATT, E_EC, 2, cells,  pop_by_name, pc)	#  restore existing pattern
+
+
+#%%
+
 # CA3 input to PCs
 ncslist = netfcns.connectCA3(FCONN, C_P, EM_CA3, EN_CA3, cells, pop_by_name, connect_random_low_start_, pc)	# with modifiable synapses
 #%%
@@ -365,7 +380,7 @@ ncslist = netfcns.connectCA3(FCONN, C_P, EM_CA3, EN_CA3, cells, pop_by_name, con
 # SET CUES FOR PATTERNS
 #################
 
-netfcns.mkcue(FPATT, CPATT, CFRAC, NPATT, SPATT, cells, ranlist, pop_by_name, pc)	# cue from already stored pattern
+netfcns.mkcue("Weights/patts" + netfile + ".dat", CPATT, CFRAC, NPATT, SPATT, cells, ranlist, pop_by_name, pc)	# cue from already stored pattern
 #netfcns.mkcue(FSTORE, CPATT, CFRAC, NSTORE)	# cue from new pattern
 netfcns.mkEC(cells, ranlist, pop_by_name, pc)
 
@@ -493,9 +508,11 @@ if (pc.id()==0 and printflag>0):
 
 import fig9_patternrecall as fig9
 
-perf = fig9.calc_performance(simname,netfile,numCycles, network_scale)   
+perf_comb = fig9.plot_results(simname,netfile,numCycles, network_scale)   
+perf_real = fig9.calc_performance(simname,netfileActual,numCycles, network_scale)   
 
-data2save={'dt':h.dt, 'tstop':h.tstop, 'netfile':netfile, 'simname':simname, 'performance':perf, 'electrostim':electrostim, 'percentDeath':percentDeath, 'network_scale':network_scale}
+
+data2save={'dt':h.dt, 'tstop':h.tstop, 'netfile':netfile, 'simname':simname, 'combinedperformance':perf_comb, 'realperformance':perf_real, 'electrostim':electrostim, 'percentDeath':percentDeath, 'network_scale':network_scale}
 
 #%%
 # import pickle
@@ -503,28 +520,77 @@ data2save={'dt':h.dt, 'tstop':h.tstop, 'netfile':netfile, 'simname':simname, 'pe
 # # Save results in a pickle file:
 # with open('pyresults/' + simname+'.pkl', 'w') as f:  # Python 3: open(..., 'wb')
 #     pickle.dump((spikeout, vout, data2save), f)
+import os
 
-if perf is not None:
-    with open('pyresults/' + simname+'_performance.txt', 'w') as f:  # Python 3: open(..., 'wb')
-        f.write("{:.3f}\n".format(perf))
-        f.write("{:.3f}\n".format(electrostim))
-        f.write("{:.3f}\n".format(percentDeath))
+fname = 'pyresults/OurResults/' + netfileActual+'_combinedperformance.dat'
+path=os.path.abspath(fname)
+
+
+        #comb_results.append(perf_comb)
+        #data = np.array(comb_results)
+       # comb_results_array = np.array(data) #saves dictionary of number of memory patterns (key) and corresponding perf_comb value
+       # np.savetxt(f, data)
+        
+        #f.write("{:.3f}\n".format(perf_comb[0]))
+        
+if perf_real is not None: #writes file with XXXX
+    #real_results = np.array([])
+    with open('pyresults/OurResults/' + simname+netfileActual+'_realperformance.dat', "w") as f:  # Python 3: open(..., 'wb')            for p in perf:        
+        f.write(str(perf_real))
+        f.write('\n')
+        
+        #for p in perf_real:
+         #   np.append(real_results, p)
+            
+        #np.savetxt(f, real_results) #saves array of real_results to file 
+        
+       # f.write("{:.3f}\n".format(electrostim))
+        #f.write("{:.3f}\n".format(percentDeath))
   
 #%%
 #################
 # PLOT RESULTS
 #################
-import plotfcns as pf
+import matplotlib.pyplot as plt
+import fig9_patternrecall as fig9
+import fig10_Vtraces as fig10
 
-pf.plotresults(params)
+if (plotflag==1):
+   """ if 'cells' in locals():
+        netfcns.spikeplot(cells,h.tstop,ntot)
+        netfcns.vplot(cells,results)
+    else:
+        spks = np.loadtxt("{}_spt.dat".format(fstem),skiprows=1)
+        plt.figure()
+        plt.rcParams["figure.figsize"] = (8,8)
+        plt.scatter(spks[:,0],spks[:,1],s=.1)
+        plt.xlabel("Time (ms)")
+        plt.ylabel("Neuron #")
+        plt.title("Spike Raster")
+        plt.show()
+        pvsoma = np.loadtxt("{}_pvsoma_0.dat".format(fstem),skiprows=1)
+        plt.figure()
+        plt.rcParams["figure.figsize"] = (8,8)
+        plt.plot(pvsoma[:,0],pvsoma[:,1])
+        plt.xlabel("Time (ms)")
+        plt.ylabel("Membrane Potential (mV)")
+        plt.title("Pattern Pyramidal Cell")
+        plt.show()
+"""    
+overall_performance=fig9.plot_results(simname,netfile,numCycles, network_scale)
 
-    # if 'cells' in locals():
-    #     netfcns.spikeplot(cells,h.tstop,ntot)
-    #     netfcns.vplot(cells,results)
+with open(path, 'a') as f:  # Python 3: open(..., 'wb')
+    f.write(str(overall_performance))
+    f.write('\n')
 
-if usepar==1 and pc.nhost()>1:
+#fig10.plot_voltages(simname, 200, SIMDUR,h.dt)
+print("overall_performance =",overall_performance)
+
+print( "** Finished plotting **")
+
+if usepar==1:
     pc.gid_clear()
     pc.runworker()
     pc.done()
     h.quit()
-    quit()
+    # quit()
