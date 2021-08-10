@@ -17,13 +17,15 @@ def combine_and_save(fname):
     comb_mem = realmem.copy()
       
     chunklen = 100//numpatt
-    
+        
     for i in range(numpatt):
         if i == 0:
-            comb_mem[:,0] = realmem[:,0].copy() 
+            comb_mem[:,i] = realmem[:,i].copy() 
         else:
             start = i* chunklen
             stop = (i + 1)* chunklen
             (comb_mem[:, 0])[start:stop] = (realmem[:,i])[start:stop]
-    
+            for n in range(100):
+                comb_mem[n, i] = 0
+ 
     return comb_mem
