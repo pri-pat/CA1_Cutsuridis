@@ -18,8 +18,11 @@ def plot_results(simname,netfile,NUMCYCLES=numCycles, scaleDown=1):
         FPATT = r'Weights/patts'+netfile+'Scaled.dat' # TODO: Replace with your full path to the file
     else:
         FPATT = r'Weights/patts'+netfile+'.dat' # TODO: Replace with your full path to the file
-        
-    NPATT = int(netfile[-1])   # number of patterns
+    try:    
+        NPATT = int(netfile[-1])   # number of patterns
+    except: # if name ends with combined
+        NPATT = int(netfile[-1-len('combined')])   # number of patterns
+            
     CPATT = 0  # index of cue pattern
     
     RTIME = 50+(250*NUMCYCLES)    # run time (msecs)
