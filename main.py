@@ -27,29 +27,14 @@ from model import cellClasses
 h.load_file("stdrun.hoc")
 h.load_file("nrngui.hoc") # load_file
 
-#%%
-#################################
-# CREATE IMAGINED/COMBINED MEMORY
-#################################
-from combine_and_save import combine_and_save
 
-netfile = "N100S20P5"
-
-make_combined=1 # make a confusing input for the model
-
-netfileActual = netfile
-
-if make_combined==1:
-    combined_mem = combine_and_save(netfile)
-    netfile +="combined"
-    np.savetxt('Weights/' + netfile+".dat", combined_mem, fmt="%d", delimiter=" ")
 
 #%%
 
 #################
 # PARAMETERS
 #################
-numpatt = int(netfileActual[-1]) 
+ 
 keepoldtypo=0 # rerun the old version of the code, including typos
 cellClasses.keepoldtypo = keepoldtypo
 usepar = 1
@@ -66,12 +51,15 @@ numCycles = 8 # set to 2 for a short test network or 8 for a full simulation
 simname="par"
 connect_random_low_start_ = 1  # low seed for mcell_ran4_init()
 
-netfile = 'N100S20P5'
+netfileActual = 'N100S20P5' # default = 5 mem; netfile datafile with patterns of n memories
+numpatt = int(netfileActual[-1]) #number patterns that will make up spurious mem
+netfile = netfileActual + 'combined'
 electrostim = 0 # 0 = no stimulation, 1 = stimulation according to parameters set farther down in code
 percentDeath = .0 # fraction of pyramidal cells to kill off
 
 
 # Check for parameters being passed in via the command line
+#to create simulation: 1st arg passed in = simname + netfile values separated by a space
 argadd = 1
 startlen = 1
 import subprocess
@@ -81,7 +69,9 @@ if (result.stdout.decode('utf-8')[:3] == "scc"): # scc has an odd way of account
     startlen = 5
     
 if len(sys.argv)>(startlen):
-    simname = sys.argv[startlen]
+    filenames = sys.argv[startlen].split() 
+    simname = filenames[0]
+    netfileActual = filenames[1]
     if len(sys.argv)>(argadd+startlen):
         percentDeath = float(sys.argv[argadd+startlen])
         if len(sys.argv)>(2*argadd+startlen):
@@ -109,6 +99,19 @@ SIMDUR = STARTDEL + (THETA*numCycles)    # simulation duration (msecs)
 
 h.tstop =  SIMDUR
 h.celsius = 34
+
+#%%
+#################################
+# CREATE IMAGINED/COMBINED MEMORY
+#################################
+from combine_and_save import combine_and_save
+
+
+make_combined=1 # make a confusing input for the model
+
+if make_combined==1:
+    combined_mem = combine_and_save(netfile)
+    np.savetxt('Weights/' + netfile+".dat", combined_mem, fmt="%d", delimiter=" ")
 
 #%%
 
@@ -497,8 +500,11 @@ if (pc.id()==0 and printflag>0):
 
 import fig9_patternrecall as fig9
 
-perf_comb = fig9.calc_performance(simname,netfile,numCycles, network_scale)   
-perf_real = fig9.calc_performance(simname,netfileActual,numCycles, network_scale)   
+
+#perf_comb cues spurious memory to recall itself
+#perf_real = spurious memory cuing its component real memories for recall quality
+perf_comb = fig9.calc_performance(simname, netfile, netfile, numCycles, network_scale)   
+perf_real = fig9.calc_performance(simname, netfile, netfileActual, numCycles, network_scale)   
 
 
 data2save={'dt':h.dt, 'tstop':h.tstop, 'netfile':netfile, 'simname':simname, 'combinedperformance':perf_comb, 'realperformance':perf_real, 'electrostim':electrostim, 'percentDeath':percentDeath, 'network_scale':network_scale}
@@ -511,7 +517,7 @@ data2save={'dt':h.dt, 'tstop':h.tstop, 'netfile':netfile, 'simname':simname, 'co
 #     pickle.dump((spikeout, vout, data2save), f)
 import os
 
-fname = 'pyresults/OurResults/' + netfile+'_combinedperformance.dat'
+fname = 'pyresults/OurResults/' + netfileActual+'_combinedperformance.dat'
 path=os.path.abspath(fname)
 
 if perf_comb is not None: #writes file with XXXXXX
@@ -528,7 +534,7 @@ if perf_comb is not None: #writes file with XXXXXX
         
 if perf_real is not None: #writes file with XXXX
     #real_results = np.array([])
-    with open('pyresults/OurResults/' + simname+netfile+'_realperformance.dat', "w") as f:  # Python 3: open(..., 'wb')            for p in perf:        
+    with open('pyresults/OurResults/' + simname+netfileActual+'_realperformance.dat', "w") as f:  # Python 3: open(..., 'wb')            for p in perf:        
         f.write(str(perf_real))
         f.write('\n')
         
@@ -574,6 +580,8 @@ if (plotflag==1):
 overall_performance=fig9.plot_results(simname,netfile,numCycles, network_scale)
 fig10.plot_voltages(simname, 200, SIMDUR,h.dt)
 print("overall_performance =",overall_performance)
+pltitle = netfile + "recall_quality_graph"
+plt.savefig('pyresults/OurResults/Exp1' + pltitle + ".png")
 
 print( "** Finished plotting **")
 

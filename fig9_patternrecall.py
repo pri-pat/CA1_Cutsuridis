@@ -134,26 +134,32 @@ def plot_results(simname,netfile,NUMCYCLES=numCycles, scaleDown=1):
 
     return co[co>0].mean()
 
-def calc_performance(simname,netfile,NUMCYCLES=numCycles, scaleDown=1):    
+def calc_performance(simname,cuename, netfile, NUMCYCLES=numCycles, scaleDown=1):    
     #NCELL = 235-(1-scaleDown)*230  # number of cells (neurons); CA3, EC, SEP Pyr can be scaled down (230)
     NPCELL = int(100*scaleDown) # number of PC (output) cells
     #SPATT = int(20*scaleDown)   # number of active cells per pattern
-    
-    
+    #cuename = combinedmem file
+    #netfile = filename of memories that will be tested for recall quality based on cue
+    #FPATT = netfile actual data
     if scaleDown<1:
         FPATT = r'Weights/patts'+netfile+'Scaled.dat' # TODO: Replace with your full path to the file
     else:
         FPATT = r'Weights/patts'+netfile+'.dat' # TODO: Replace with your full path to the file
-        
+    
+    cuepatt = r'Weights/patts' + cuename + '.dat'
+    always_cue = np.loadtxt(cuepatt)
+    cue = always_cue[:, 0] #makes cue based on cuename file
+    
     NPATT = int(netfile[-1])   # number of patterns
-    CPATT = 0  # index of cue pattern
+    #CPATT = 0  # index of cue pattern
     results=[]
+    
     for CPATT in range(NPATT):
         RTIME = 50+(250*NUMCYCLES)    # run time (msecs)
         
         
         patts = np.loadtxt(FPATT)   # load stored patterns
-        cue = patts[:,CPATT]   # extract cue pattern
+        #cue = patts[:,CPATT]   # extract cue pattern
         
         FSPIKE = r'pyresults/{}_spt.dat'.format(simname)   # spikes file
         sp = np.loadtxt(FSPIKE,skiprows=1)  # load spike times
