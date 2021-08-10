@@ -23,6 +23,7 @@ import sys
 import importlib
 import netfcns
 from model import cellClasses
+import pickle
 
 h.load_file("stdrun.hoc")
 h.load_file("nrngui.hoc") # load_file
@@ -102,6 +103,24 @@ SIMDUR = STARTDEL + (THETA*numCycles)    # simulation duration (msecs)
 h.tstop =  SIMDUR
 h.celsius = 34
 
+params = {"simname":simname,
+          "netfile":netfile,
+          "numCycles":numCycles,
+          "network_scale":network_scale,
+          "SIMDUR":SIMDUR,
+          "dt":h.dt,
+          "numpatt":numpatt,
+          "netfileActual":netfileActual,
+          "spikethresh":spikethresh,
+          "connect_random_low_start_": connect_random_low_start_,
+          "scaleEScon": scaleEScon,
+          "electrostim": electrostim,
+          "percentDeath": percentDeath,
+          "mgconc": mgconc}
+
+with open('pyresults/' + simname + '.pickle', 'wb') as f:
+    pickle.dump(params, f, pickle.HIGHEST_PROTOCOL)
+    
  #%%
 #################################
 # CREATE IMAGINED/COMBINED MEMORY
@@ -160,7 +179,7 @@ h('{load_file("ranstream.hoc")}')  # to give each cell its own sequence generato
 h('{load_file("netparmpi.hoc")}')  # to give each cell its own sequence generator
 
 h.nrnmpi_init() 
-pnm = h.ParallelNetManager(ncell)	# Set up a parallel net manager for all the cells
+pnm = h.ParallelNetManager(ncell)    # Set up a parallel net manager for all the cells
 pc = pnm.pc # Even if running serially, we can create and use this
                          # in serial, pc.nhost == 1
 pc.gid_clear() # If rerunning code, clear old assignments (in case network size got changed)
@@ -367,21 +386,21 @@ for conn in connlist:
 #netfcns.mkinputs(cells, pop_by_name['CA3Cell'].gidst, pop_by_name['ECCell'].gidst, pop_by_name['SEPCell'].gidst, ntot, pop_by_name)
 # EC input to PCs
 FPATT = 'Weights/patts' + netfileActual + '.dat'
-ncelist = netfcns.connectEC(FPATT, ECPATT, NPATT, E_EC, 2, cells,  pop_by_name, pc)	#  restore existing pattern
+ncelist = netfcns.connectEC(FPATT, ECPATT, NPATT, E_EC, 2, cells,  pop_by_name, pc)    #  restore existing pattern
 
 
 #%%
 
 # CA3 input to PCs
-ncslist = netfcns.connectCA3(FCONN, C_P, EM_CA3, EN_CA3, cells, pop_by_name, connect_random_low_start_, pc)	# with modifiable synapses
+ncslist = netfcns.connectCA3(FCONN, C_P, EM_CA3, EN_CA3, cells, pop_by_name, connect_random_low_start_, pc)    # with modifiable synapses
 #%%
 
 #################
 # SET CUES FOR PATTERNS
 #################
 
-netfcns.mkcue("Weights/patts" + netfile + ".dat", CPATT, CFRAC, NPATT, SPATT, cells, ranlist, pop_by_name, pc)	# cue from already stored pattern
-#netfcns.mkcue(FSTORE, CPATT, CFRAC, NSTORE)	# cue from new pattern
+netfcns.mkcue("Weights/patts" + netfile + ".dat", CPATT, CFRAC, NPATT, SPATT, cells, ranlist, pop_by_name, pc)    # cue from already stored pattern
+#netfcns.mkcue(FSTORE, CPATT, CFRAC, NSTORE)    # cue from new pattern
 netfcns.mkEC(cells, ranlist, pop_by_name, pc)
 
 #%%
@@ -470,7 +489,7 @@ def bpattrun():
             print("Cue pattern ", i) # print header once
         cuefstem = "{}_{}".format(fstem, i)
         #h.sprint(fstem, "Results/HAM_P5R%", i)
-        netfcns.mkcue(FPATT, i, CFRAC, NPATT, pc);	# cue from stored pattern
+        netfcns.mkcue(FPATT, i, CFRAC, NPATT, pc);    # cue from stored pattern
         pc.barrier()  # wait for all hosts to get to this point
         #{pc.set_maxstep(10)}
         pc.set_maxstep(1);
@@ -555,28 +574,32 @@ import matplotlib.pyplot as plt
 import fig9_patternrecall as fig9
 import fig10_Vtraces as fig10
 
+import plotfcns as pf
+
 if (plotflag==1):
-   """ if 'cells' in locals():
-        netfcns.spikeplot(cells,h.tstop,ntot)
-        netfcns.vplot(cells,results)
-    else:
-        spks = np.loadtxt("{}_spt.dat".format(fstem),skiprows=1)
-        plt.figure()
-        plt.rcParams["figure.figsize"] = (8,8)
-        plt.scatter(spks[:,0],spks[:,1],s=.1)
-        plt.xlabel("Time (ms)")
-        plt.ylabel("Neuron #")
-        plt.title("Spike Raster")
-        plt.show()
-        pvsoma = np.loadtxt("{}_pvsoma_0.dat".format(fstem),skiprows=1)
-        plt.figure()
-        plt.rcParams["figure.figsize"] = (8,8)
-        plt.plot(pvsoma[:,0],pvsoma[:,1])
-        plt.xlabel("Time (ms)")
-        plt.ylabel("Membrane Potential (mV)")
-        plt.title("Pattern Pyramidal Cell")
-        plt.show()
-"""    
+#    """ if 'cells' in locals():
+#         netfcns.spikeplot(cells,h.tstop,ntot)
+#         netfcns.vplot(cells,results)
+#     else:
+#         spks = np.loadtxt("{}_spt.dat".format(fstem),skiprows=1)
+#         plt.figure()
+#         plt.rcParams["figure.figsize"] = (8,8)
+#         plt.scatter(spks[:,0],spks[:,1],s=.1)
+#         plt.xlabel("Time (ms)")
+#         plt.ylabel("Neuron #")
+#         plt.title("Spike Raster")
+#         plt.show()
+#         pvsoma = np.loadtxt("{}_pvsoma_0.dat".format(fstem),skiprows=1)
+#         plt.figure()
+#         plt.rcParams["figure.figsize"] = (8,8)
+#         plt.plot(pvsoma[:,0],pvsoma[:,1])
+#         plt.xlabel("Time (ms)")
+#         plt.ylabel("Membrane Potential (mV)")
+#         plt.title("Pattern Pyramidal Cell")
+#         plt.show()
+#         """    
+    pf.plotresults(params)
+    
 overall_performance=fig9.plot_results(simname,netfile,numCycles, network_scale)
 
 with open(path, 'a') as f:  # Python 3: open(..., 'wb')
@@ -587,6 +610,7 @@ with open(path, 'a') as f:  # Python 3: open(..., 'wb')
 print("overall_performance =",overall_performance)
 
 print( "** Finished plotting **")
+
 
 if usepar==1:
     pc.gid_clear()

@@ -36,7 +36,7 @@ def plotresults(*args):
             except:
                 print('*********** Warning! ***********')
                 print('No parameter info found. Using default values:')
-                params = {"simname":'par',"netfile":'N100S20P5',"numCycles":2,"network_scale":.2,"SIMDUR":550,"dt":0.025}
+                params = {"simname":'par',"netfile":'N100S20P5',"numCycles":8,"network_scale":.2,"SIMDUR":2050,"dt":0.025}
     for key in params:
         print(key,': ',params[key])
     
@@ -62,3 +62,5 @@ def plotresults(*args):
     print("overall_performance =",overall_performance)
     
     print( "** Finished plotting **")
+    
+plotresults('par')
