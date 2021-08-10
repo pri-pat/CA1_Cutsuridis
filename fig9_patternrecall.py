@@ -127,7 +127,7 @@ def plot_results(simname,netfile,NUMCYCLES=numCycles, scaleDown=1):
     plt.xlim([STIME, ETIME])
     plt.ylim([0, 1.02])
     
-    plt.savefig("Images/{}.png".format(simname))
+    plt.savefig("Images/{}.png".format(netfile))
     plt.show()
     
     print("Overall performance metric for {}: {}".format(simname,co[co>0].mean()))
@@ -144,7 +144,7 @@ def calc_performance(simname,netfile,NUMCYCLES=numCycles, scaleDown=1):
         FPATT = r'Weights/patts'+netfile+'Scaled.dat' # TODO: Replace with your full path to the file
     else:
         FPATT = r'Weights/patts'+netfile+'.dat' # TODO: Replace with your full path to the file
-        
+      
     NPATT = int(netfile[-1])   # number of patterns
     CPATT = 0  # index of cue pattern
     results=[]
