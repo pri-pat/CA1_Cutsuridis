@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 numCycles=8
 
-def plot_results(simname,netfile,NUMCYCLES=numCycles, scaleDown=1):    
+def plot_results(simname,netfile,NUMCYCLES=numCycles, scaleDown=1):# spurious cue itself
     #NCELL = 235-(1-scaleDown)*230  # number of cells (neurons); CA3, EC, SEP Pyr can be scaled down (230)
     NPCELL = int(100*scaleDown) # number of PC (output) cells
     #SPATT = 20*scaleDown   # number of active cells per pattern
@@ -130,14 +130,14 @@ def plot_results(simname,netfile,NUMCYCLES=numCycles, scaleDown=1):
     plt.xlim([STIME, ETIME])
     plt.ylim([0, 1.02])
     
-    plt.savefig("Images/{}.png".format(netfile))
+    plt.savefig("Images/{}.png".format(simname))
     plt.show()
     
     print("Overall performance metric for {}: {}".format(simname,co[co>0].mean()))
 
     return co[co>0].mean()
 
-def calc_performance(simname,netfile,NUMCYCLES=numCycles, scaleDown=1):    
+def calc_performance(simname,netfile,NUMCYCLES=numCycles, scaleDown=1): #spurious cue for real mem components
     #NCELL = 235-(1-scaleDown)*230  # number of cells (neurons); CA3, EC, SEP Pyr can be scaled down (230)
     NPCELL = int(100*scaleDown) # number of PC (output) cells
     #SPATT = int(20*scaleDown)   # number of active cells per pattern

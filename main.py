@@ -56,7 +56,7 @@ numCycles = 8 # set to 2 for a short test network or 8 for a full simulation
 simname="par"
 connect_random_low_start_ = 1  # low seed for mcell_ran4_init()
 
-netfile = 'N100S20P5'
+netfile = 'N100S20P2'
 netfileActual = netfile
 numpatt = int(netfileActual[-1]) 
 
@@ -111,12 +111,10 @@ params = {"simname":simname,
           "dt":h.dt,
           "numpatt":numpatt,
           "netfileActual":netfileActual,
-          "spikethresh":spikethresh,
           "connect_random_low_start_": connect_random_low_start_,
           "scaleEScon": scaleEScon,
           "electrostim": electrostim,
-          "percentDeath": percentDeath,
-          "mgconc": mgconc}
+          "percentDeath": percentDeath}
 
 with open('pyresults/' + simname + '.pickle', 'wb') as f:
     pickle.dump(params, f, pickle.HIGHEST_PROTOCOL)
@@ -541,7 +539,7 @@ data2save={'dt':h.dt, 'tstop':h.tstop, 'netfile':netfile, 'simname':simname, 'co
 #     pickle.dump((spikeout, vout, data2save), f)
 import os
 
-fname = 'pyresults/OurResults/' + netfileActual+'_combinedperformance.dat'
+fname = 'pyresults/OurResults/' + simname+netfileActual+'_combinedperformance.dat'
 path=os.path.abspath(fname)
 
 
