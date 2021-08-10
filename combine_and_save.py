@@ -8,9 +8,13 @@ Created on Thu Aug  5 14:23:25 2021
 import numpy as np
 
 def combine_and_save(fname):
-    numpatt = int(str(fname)[-1])
-    realmem = ""
-    
+    try:
+        numpatt = int(str(fname)[-2:])
+    except:
+        try: 
+            numpatt = int(str(fname)[-1])
+        except:
+            numpatt = int(str(fname[-1 - len('combined')]))
     #open and read memory
     realmem = np.loadtxt("Weights/patts" + fname + ".dat")
    
