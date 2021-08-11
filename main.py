@@ -56,7 +56,7 @@ numCycles = 8 # set to 2 for a short test network or 8 for a full simulation
 simname="par"
 connect_random_low_start_ = 1  # low seed for mcell_ran4_init()
 
-netfile = 'N100S20P40'
+netfile = 'N100S20P20'
 netfileActual = netfile
 numpatt = int(netfileActual[-1]) 
 
