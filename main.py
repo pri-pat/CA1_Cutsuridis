@@ -58,6 +58,7 @@ connect_random_low_start_ = 1  # low seed for mcell_ran4_init()
 
 netfile = 'N100S20P20'
 netfileActual = netfile
+netfile += 'combined'
 numpatt = int(netfileActual[-1]) 
 
 electrostim = 0 # 0 = no stimulation, 1 = stimulation according to parameters set farther down in code
@@ -132,8 +133,7 @@ make_combined=1 # make a confusing input for the model
 #netfileActual = netfile
 
 if make_combined==1:
-    combined_mem = combine_and_save(netfile)
-    netfile +="combined"
+    combined_mem = combine_and_save(netfileActual)
     np.savetxt('Weights/patts' + netfile+".dat", combined_mem, fmt="%d", delimiter=" ")
 
 
@@ -259,9 +259,9 @@ C_P = 1  # probability of excitatory connections received by each CA1 PC
          # from CA3 inputs (1 gives full connectivity)
          
 SPATT = 20*network_scale    # number of active cells per pattern
-NPATT = int(netfile[-1])    # number of stored patterns
+NPATT = int(netfileActual[-1])    # number of stored patterns
 if NPATT == 0:
-    NPATT = int(netfile[-2:])
+    NPATT = int(netfileActual[-2:])
 NSTORE = 20    # number of new patterns to store
 
 CPATT = 1    # index of cue pattern
@@ -607,8 +607,8 @@ with open(path, 'a') as f:  # Python 3: open(..., 'wb')
     f.write('\n')
 
 #fig10.plot_voltages(simname, 200, SIMDUR,h.dt)
-print("overall_performance =",overall_performance)
-
+print("overall_performance = ",overall_performance)
+print("real mem performance = ", perf_real)
 print( "** Finished plotting **")
 
 
