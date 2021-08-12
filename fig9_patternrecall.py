@@ -142,15 +142,18 @@ def calc_performance(simname,netfile,NUMCYCLES=numCycles, scaleDown=1): #spuriou
     NPCELL = int(100*scaleDown) # number of PC (output) cells
     #SPATT = int(20*scaleDown)   # number of active cells per pattern
     
-    
     if scaleDown<1:
         FPATT = r'Weights/patts'+netfile+'Scaled.dat' # TODO: Replace with your full path to the file
     else:
         FPATT = r'Weights/patts'+netfile+'.dat' # TODO: Replace with your full path to the file
       
     NPATT = int(netfile[-1])   # number of patterns
+    if NPATT == 0:
+        NPATT = int(netfile[-2:])
+        
     CPATT = 0  # index of cue pattern
     results=[]
+    print(NPATT)
     for CPATT in range(NPATT):
         RTIME = 50+(250*NUMCYCLES)    # run time (msecs)
         

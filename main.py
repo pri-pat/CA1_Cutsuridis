@@ -259,8 +259,10 @@ C_P = 1  # probability of excitatory connections received by each CA1 PC
          # from CA3 inputs (1 gives full connectivity)
          
 SPATT = 20*network_scale    # number of active cells per pattern
-NPATT = 5    # number of stored patterns
-NSTORE = 5    # number of new patterns to store
+NPATT = int(netfile[-1])    # number of stored patterns
+if NPATT == 0:
+    NPATT = int(netfile[-2:])
+NSTORE = 20    # number of new patterns to store
 
 CPATT = 1    # index of cue pattern
 CFRAC = 1    # fraction of active cells in cue
