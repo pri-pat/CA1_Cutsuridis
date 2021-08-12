@@ -56,7 +56,7 @@ numCycles = 8 # set to 2 for a short test network or 8 for a full simulation
 simname="par"
 connect_random_low_start_ = 1  # low seed for mcell_ran4_init()
 
-netfile = 'N100S20P20'
+netfile = 'N100S20P40'
 netfileActual = netfile
 netfile += 'combined'
 numpatt = int(netfileActual[-1]) 
@@ -602,7 +602,7 @@ if (plotflag==1):
     
 overall_performance=fig9.plot_results(simname,netfile,numCycles, network_scale)
 
-with open(path, 'a') as f:  # Python 3: open(..., 'wb')
+with open(path, 'w') as f:  # Python 3: open(..., 'wb')
     f.write(str(overall_performance))
     f.write('\n')
 
